@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from setuptools import setup
 from io import open
 
@@ -12,7 +14,8 @@ setup(
 		python_requires=">=3.3",
 		packages = ['oogillespie'],
 		install_requires = requirements,
-		setup_requires = ['setuptools_scm'],
+		setup_requires = ['setuptools_scm','pytest-runner'],
+		tests_require = ['pytest'],
 		use_scm_version = {'write_to': 'oogillespie/version.py'},
 		classifiers = [
 				'Development Status :: Alpha',
