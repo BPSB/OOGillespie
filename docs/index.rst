@@ -25,6 +25,8 @@ Command reference
 =================
 
 .. automodule:: _oogillespie
+.. autoclass:: Gillespie
+    :members:
 
 
 
