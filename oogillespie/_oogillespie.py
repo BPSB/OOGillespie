@@ -2,7 +2,7 @@ import numpy as np
 from itertools import chain
 import random
 
-# Decorators for events
+# Classes for events
 class Event(object):
 	def __init__(self,function):
 		self.action = function
@@ -16,6 +16,24 @@ class FixedRateEvent(object):
 		self._rate = rate
 
 class Gillespie(object):
+	"""
+	This class only works if inherited from and if the methods `initialise` and `state` are replaced. Also, at least method has to be marked as an event with the respective decorator.
+	
+	The constructor takes the following arguments.
+	All further arguments are forwarded to `initialise`.
+	
+	Parameters
+	----------
+	time = 0
+		The starting time.
+	
+	max_steps = 1000
+	max_t = ∞
+		The maximum number of steps or time, respectively.
+		If either of the two is exceeded, the simulation is aborted.
+	
+	"""
+	
 	def __init__(self,**kwargs):
 		self.time = kwargs.pop("time",0)
 		self.steps = 0
@@ -48,6 +66,15 @@ class Gillespie(object):
 					visited.add(name)
 	
 	def event(arg):
+		"""
+		Decorator that marks a method as an event.
+		You can use this either with no or one argument:
+		
+		* If called with an argument, this must be a number specifying the rate of the event.
+
+		* If called without argument, the function obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate of that event.
+		"""
+		
 		if callable(arg):
 			return Event(arg)
 		else:
