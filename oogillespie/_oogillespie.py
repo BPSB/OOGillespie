@@ -104,4 +104,16 @@ class Gillespie(object):
 	
 	def __iter__(self):
 		return self
+	
+	def initialise(self):
+		"""
+		You have to overwrite this method. It is called when intialising the integrator. Use it to set internal parameters to initial values. It gets passed surplus arguments from the constructor.
+		"""
+		raise SyntaxError("You have to overwrite the initiate method when inheriting from Gillespie")
+	
+	def state(self):
+		"""
+		You have to overwrite this method. It is called to determine the return value when iterating/simulating. Use it to return whatever properties you are interested in.
+		"""
+		raise SyntaxError("You have to overwrite the state method when inheriting from Gillespie")
 
