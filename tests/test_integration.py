@@ -40,7 +40,7 @@ class SimpleProcess(Gillespie):
 	def state(self):
 		return self.a, self.b, self.c
 
-class TestIntegration():
+class TestIntegration(object):
 	@fixture
 	def process(self):
 		proc = SimpleProcess(max_t=max_time,max_steps=1e10)
