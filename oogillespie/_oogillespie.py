@@ -1,5 +1,4 @@
 import numpy as np
-from itertools import chain
 import random
 
 # Classes for events
