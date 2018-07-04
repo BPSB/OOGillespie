@@ -55,7 +55,12 @@ class Gillespie(object):
 		for name,member in self._members():
 			if isinstance(member,Event):
 				self.actions.append(member.action)
-				self.rate_getters.append(member.rate_getter)
+				try:
+					rate_getter = member.rate_getter
+				except AttributeError:
+					raise SyntaxError(f"No rate function was assigned to variable-rate event {name}.")
+				self.rate_getters.append(rate_getter)
+				
 	
 	def _members(self):
 		visited = set()
@@ -72,7 +77,7 @@ class Gillespie(object):
 		
 		* If called with an argument, this must be a number specifying the rate of the event.
 
-		* If called without argument, the function obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate of that event.
+		* If called witaout argument, the function obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate of that event.
 		"""
 		
 		if callable(arg):
