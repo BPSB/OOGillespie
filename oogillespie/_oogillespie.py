@@ -32,6 +32,9 @@ class Gillespie(object):
 		The maximum number of steps or time, respectively.
 		If either of the two is exceeded, the simulation is aborted.
 	
+	seed = None
+		Seed for random number generation.
+		If `None`, system time or similar is used (like random.seed).
 	"""
 	
 	def __init__(self,**kwargs):
@@ -39,6 +42,8 @@ class Gillespie(object):
 		self.steps = 0
 		self.max_steps = kwargs.pop("max_steps",1000)
 		self.max_t = kwargs.pop("max_t",np.inf)
+		self.R = random.Random(kwargs.pop("seed",None))
+		
 		self.initialise(**kwargs)
 		self._get_events()
 	
@@ -96,7 +101,7 @@ class Gillespie(object):
 	def __next__(self):
 		cum_rates = self._get_cum_rates()
 		total_rate = cum_rates[-1]
-		dt = random.expovariate(total_rate)
+		dt = self.R.expovariate(total_rate)
 		
 		if self.time+dt>self.max_t or self.steps>=self.max_steps:
 			raise StopIteration
@@ -104,7 +109,7 @@ class Gillespie(object):
 		self.steps += 1
 		self.time += dt
 		
-		random.choices(self.actions,cum_weights=cum_rates)[0](self)
+		self.R.choices(self.actions,cum_weights=cum_rates)[0](self)
 		return self.state()
 	
 	def __iter__(self):

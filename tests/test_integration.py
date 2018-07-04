@@ -58,5 +58,13 @@ class TestIntegration(object):
 	def test_time(self,process):
 		assert process.time < max_time
 		assert process.time > max_time - 10/sum(rates)
+
+def test_seeds():
+	seed = 42
+	run_1 = list(SimpleProcess(seed=42))
+	run_2 = list(SimpleProcess(seed=42))
+	run_3 = list(SimpleProcess(seed=23))
 	
+	assert run_1 == run_2
+	assert run_3 != run_1
 
