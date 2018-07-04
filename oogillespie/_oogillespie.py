@@ -81,7 +81,7 @@ class Gillespie(object):
 		
 		* If called with an argument, this must be a number specifying the rate of the event.
 
-		* If called witaout argument, the function obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate of that event.
+		* If called without argument, the function obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate of that event.
 		"""
 		
 		if callable(arg):
@@ -116,7 +116,7 @@ class Gillespie(object):
 	
 	def initialise(self):
 		"""
-		You have to overwrite this method. It is called when intialising the integrator. Use it to set internal parameters to initial values. It gets passed surplus arguments from the constructor.
+		You have to overwrite this method. It is called when initialising the integrator. Use it to set internal parameters to initial values. It gets passed surplus arguments from the constructor.
 		"""
 		raise SyntaxError("You have to overwrite the initiate method when inheriting from Gillespie")
 	
