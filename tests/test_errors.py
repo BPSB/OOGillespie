@@ -32,3 +32,16 @@ class ProcessWithoutRate(Gillespie):
 def test_no_rate():
 	with raises(SyntaxError):
 		ProcessWithoutRate()
+
+class ProcessWithoutEvent(Gillespie):
+	def initialise(self):
+		self.a = 0
+	
+	def state(self):
+		return self.a
+
+def test_no_event():
+	with raises(SyntaxError):
+		ProcessWithoutEvent()
+
+
