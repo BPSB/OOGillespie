@@ -15,15 +15,12 @@ class Event(object):
 			raise SyntaxError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
 	
 	def par_combos(self):
-		pars = list(signature(self._action).parameters.keys())[1:]
-		for combo in product(*map(range,self.shape)):
-			kwargs = dict(zip(pars,combo))
-			yield combo, kwargs
+		return product(*map(range,self.shape))
 	
 	def actions(self):
 		return [
-				partial(self._action,self.parent,**kwargs)
-				for _,kwargs in self.par_combos()
+				partial(self._action,self.parent,*combo)
+				for combo in self.par_combos()
 			]
 
 class FixedRateEvent(Event):
@@ -34,7 +31,7 @@ class FixedRateEvent(Event):
 		self.check_dim()
 	
 	def get_rates(self):
-		for combo,_ in self.par_combos():
+		for combo in self.par_combos():
 			yield self._rates[combo]
 
 class VariableRateEvent(Event):
@@ -50,7 +47,7 @@ class VariableRateEvent(Event):
 	
 	def get_rates(self):
 		rates = np.array(self.rate_getter(self.parent))
-		for combo,_ in self.par_combos():
+		for combo in self.par_combos():
 			yield rates[combo]
 	
 	@property
