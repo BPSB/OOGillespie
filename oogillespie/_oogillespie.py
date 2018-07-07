@@ -22,6 +22,10 @@ class Event(object):
 				partial(self._action,self.parent,*combo)
 				for combo in self.par_combos()
 			]
+	
+	def get_rates(self):
+		for combo in self.par_combos():
+			yield self._rates[combo]
 
 class FixedRateEvent(Event):
 	def __init__(self,function,rates):
@@ -29,10 +33,6 @@ class FixedRateEvent(Event):
 		self._rates = np.array(rates)
 		self.shape = self._rates.shape
 		self.check_dim()
-	
-	def get_rates(self):
-		for combo in self.par_combos():
-			yield self._rates[combo]
 
 class VariableRateEvent(Event):
 	def rate(self,function):
@@ -45,10 +45,9 @@ class VariableRateEvent(Event):
 		except AttributeError:
 			raise SyntaxError(f"No rate function was assigned to variable-rate event {self._action.__name__}.")
 	
-	def get_rates(self):
-		rates = np.array(self.rate_getter(self.parent))
-		for combo in self.par_combos():
-			yield rates[combo]
+	@property
+	def _rates(self):
+		return np.array(self.rate_getter(self.parent))
 	
 	@property
 	def parent(self):
