@@ -18,10 +18,8 @@ class Event(object):
 		return product(*map(range,self.shape))
 	
 	def actions(self):
-		return [
-				partial(self._action,self.parent,*combo)
-				for combo in self.par_combos()
-			]
+		for combo in self.par_combos():
+			yield partial(self._action,self.parent,*combo)
 	
 	def get_rates(self):
 		for combo in self.par_combos():
