@@ -5,7 +5,7 @@ from itertools import product, chain
 from functools import partialmethod, partial
 
 # Classes for events
-class EventBase(object):
+class Event(object):
 	def __init__(self,function):
 		self.action = function
 		self.dim = len(signature(self.action).parameters)-1
@@ -20,7 +20,7 @@ class EventBase(object):
 			kwargs = dict(zip(pars,combo))
 			yield combo, kwargs
 
-class FixedRateEvent(EventBase):
+class FixedRateEvent(Event):
 	def __init__(self,function,rates):
 		super().__init__(function)
 		self._rates = np.array(rates)
@@ -31,7 +31,7 @@ class FixedRateEvent(EventBase):
 		for combo,_ in self.par_combos():
 			yield self._rates[combo]
 
-class Event(EventBase):
+class VariableRateEvent(Event):
 	def rate(self,function):
 		self._rate_getter = function
 	
@@ -100,7 +100,7 @@ class Gillespie(object):
 					self.actions.append(partial(member.action,**kwargs))
 					self.constant_rates.append(member._rates[combo])
 		
-		for name,member in self._members(Event):
+		for name,member in self._members(VariableRateEvent):
 			member.shape = np.shape(member.rate_getter(self))
 			
 			for combo,kwargs in member.par_combos():
@@ -113,6 +113,9 @@ class Gillespie(object):
 			raise SyntaxError("No event (with non-zero rate) defined. You need to mark at least one method as an event by using the Gillespie.event decorator.")
 	
 	def _members(self,Class):
+		"""
+		Provides an iterator over all members of self that are an instance of Class.
+		"""
 		visited = set()
 		for cls in [self.__class__] + self.__class__.mro():
 			for name,member in cls.__dict__.items():
@@ -132,7 +135,7 @@ class Gillespie(object):
 		"""
 		
 		if callable(arg):
-			return Event(arg)
+			return VariableRateEvent(arg)
 		else:
 			def wrapper(function):
 				return FixedRateEvent(function,arg)
