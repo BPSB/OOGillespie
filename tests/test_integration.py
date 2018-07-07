@@ -43,27 +43,18 @@ class SimpleProcess(ProcessBase):
 class MultiEventProcess(ProcessBase):
 	@Gillespie.event(rates)
 	def increase(self,i):
-		if i<3:
-			self.N[i] += 1
-		else:
-			raise AssertionError("This event should never happen")
+		self.N[i] += 1
 
 class MultiEventProcess2D(ProcessBase):
 	@Gillespie.event(diag(rates))
 	def increase(self,i,j):
 		assert i==j
-		if i<3:
-			self.N[i] += 1
-		else:
-			raise AssertionError("This event should never happen")
+		self.N[i] += 1
 
 class VariableRateMultiEventProcess(ProcessBase):
 	@Gillespie.event
 	def increase(self,i):
-		if i<3:
-			self.N[i] += 1
-		else:
-			raise AssertionError("This event should never happen")
+		self.N[i] += 1
 	
 	@increase.rate
 	def increase_rate(self):
@@ -73,10 +64,7 @@ class VariableRateMultiEventProcess2D(ProcessBase):
 	@Gillespie.event
 	def increase(self,i,j):
 		assert i==j
-		if i<3:
-			self.N[i] += 1
-		else:
-			raise AssertionError("This event should never happen")
+		self.N[i] += 1
 	
 	@increase.rate
 	def increase_rate(self):
