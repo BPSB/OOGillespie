@@ -11,25 +11,25 @@ class Event(object):
 		self.dim = len(signature(self._action).parameters)-1
 	
 	def check_dim(self):
-		if self.dim != len(self.shape):
+		if self.dim != len(self._shape):
 			raise SyntaxError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
 	
-	def par_combos(self):
-		return product(*map(range,self.shape))
+	def _par_combos(self):
+		return product(*map(range,self._shape))
 	
 	def actions(self):
-		for combo in self.par_combos():
+		for combo in self._par_combos():
 			yield partial(self._action,self.parent,*combo)
 	
 	def get_rates(self):
-		for combo in self.par_combos():
+		for combo in self._par_combos():
 			yield self._rates[combo]
 
 class FixedRateEvent(Event):
 	def __init__(self,function,rates):
 		super().__init__(function)
 		self._rates = np.array(rates)
-		self.shape = self._rates.shape
+		self._shape = self._rates.shape
 		self.check_dim()
 
 class VariableRateEvent(Event):
@@ -49,7 +49,7 @@ class VariableRateEvent(Event):
 		self._parent = new_parent
 		if not hasattr(self,"rate_getter"):
 			raise SyntaxError(f"No rate function was assigned to variable-rate event {self._action.__name__}.")
-		self.shape = np.shape(self.rate_getter(self._parent))
+		self._shape = np.shape(self.rate_getter(self._parent))
 		self.check_dim()
 
 class Gillespie(object):
