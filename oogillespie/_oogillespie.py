@@ -88,7 +88,7 @@ class Gillespie(object):
 		self._actions = []
 		self._rate_getters = []
 		
-		for name,member in self._members(Event):
+		for member in self._members(Event):
 			member.parent = self
 			self._actions.extend(member.actions())
 			self._rate_getters.append(member.get_rates)
@@ -105,7 +105,7 @@ class Gillespie(object):
 			for name,member in cls.__dict__.items():
 				if name not in visited:
 					if isinstance(member,Class):
-						yield name,member
+						yield member
 					visited.add(name)
 	
 	def event(arg):
