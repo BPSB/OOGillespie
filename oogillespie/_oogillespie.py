@@ -94,32 +94,31 @@ class Gillespie(object):
 		self.constant_rates = []
 		self.rate_getters = []
 		
-		for name,member in self._members():
-			if isinstance(member,FixedRateEvent):
-				for combo,kwargs in member.par_combos():
-					if member._rates[combo]:
-						self.actions.append(partial(member.action,**kwargs))
-						self.constant_rates.append(member._rates[combo])
-		
-		for name,member in self._members():
-			if isinstance(member,Event):
-				member.shape = np.shape(member.rate_getter(self))
-				
-				for combo,kwargs in member.par_combos():
+		for name,member in self._members(FixedRateEvent):
+			for combo,kwargs in member.par_combos():
+				if member._rates[combo]:
 					self.actions.append(partial(member.action,**kwargs))
-				
-				member.parent = self
-				self.rate_getters.append(member.get_rates)
+					self.constant_rates.append(member._rates[combo])
+		
+		for name,member in self._members(Event):
+			member.shape = np.shape(member.rate_getter(self))
+			
+			for combo,kwargs in member.par_combos():
+				self.actions.append(partial(member.action,**kwargs))
+			
+			member.parent = self
+			self.rate_getters.append(member.get_rates)
 		
 		if not self.actions:
 			raise SyntaxError("No event (with non-zero rate) defined. You need to mark at least one method as an event by using the Gillespie.event decorator.")
 	
-	def _members(self):
+	def _members(self,Class):
 		visited = set()
 		for cls in [self.__class__] + self.__class__.mro():
 			for name,member in cls.__dict__.items():
 				if name not in visited:
-					yield name,member
+					if isinstance(member,Class):
+						yield name,member
 					visited.add(name)
 	
 	def event(arg):
