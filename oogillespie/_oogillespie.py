@@ -97,16 +97,9 @@ class Gillespie(object):
 	
 	def _get_events(self):
 		self.actions = []
-		self.constant_rates = []
 		self.rate_getters = []
 		
-		for name,member in self._members(FixedRateEvent):
-			member.parent = self
-			self.actions.extend(member.actions())
-			for combo,kwargs in member.par_combos():
-				self.constant_rates.append(member._rates[combo])
-		
-		for name,member in self._members(VariableRateEvent):
+		for name,member in self._members(Event):
 			member.parent = self
 			self.actions.extend(member.actions())
 			self.rate_getters.append(member.get_rates)
@@ -144,7 +137,7 @@ class Gillespie(object):
 			return wrapper
 	
 	def _get_cum_rates(self):
-		return np.cumsum(self.constant_rates + [
+		return np.cumsum([
 				rate
 				for rate_getter in self.rate_getters
 				for rate in rate_getter()
