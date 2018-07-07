@@ -48,6 +48,15 @@ class VariableRateEvent(Event):
 			yield rates[combo]
 	
 	@property
+	def parent(self):
+		return self._parent
+	
+	@parent.setter
+	def parent(self,new_parent):
+		self._parent = new_parent
+		self.shape = np.shape(self.rate_getter(self._parent))
+
+	@property
 	def shape(self):
 		return self._shape
 	
@@ -101,12 +110,9 @@ class Gillespie(object):
 					self.constant_rates.append(member._rates[combo])
 		
 		for name,member in self._members(VariableRateEvent):
-			member.shape = np.shape(member.rate_getter(self))
-			
+			member.parent = self
 			for combo,kwargs in member.par_combos():
 				self.actions.append(partial(member.action,**kwargs))
-			
-			member.parent = self
 			self.rate_getters.append(member.get_rates)
 		
 		if not self.actions:
