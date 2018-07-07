@@ -14,14 +14,14 @@ class Event(object):
 		shape = self._rates.shape
 		if self.dim != len(shape):
 			raise SyntaxError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
-		self._par_combos = lambda: product(*map(range,shape))
+		self._par_combos = list(product(*map(range,shape)))
 	
 	def actions(self):
-		for combo in self._par_combos():
+		for combo in self._par_combos:
 			yield partial(self._action,self.parent,*combo)
 	
 	def get_rates(self):
-		for combo in self._par_combos():
+		for combo in self._par_combos:
 			yield self._rates[combo]
 
 class FixedRateEvent(Event):
