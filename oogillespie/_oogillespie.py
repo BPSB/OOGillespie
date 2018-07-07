@@ -36,14 +36,7 @@ class FixedRateEvent(Event):
 
 class VariableRateEvent(Event):
 	def rate(self,function):
-		self._rate_getter = function
-	
-	@property
-	def rate_getter(self):
-		try:
-			return self._rate_getter
-		except AttributeError:
-			raise SyntaxError(f"No rate function was assigned to variable-rate event {self._action.__name__}.")
+		self.rate_getter = function
 	
 	@property
 	def _rates(self):
@@ -56,6 +49,8 @@ class VariableRateEvent(Event):
 	@parent.setter
 	def parent(self,new_parent):
 		self._parent = new_parent
+		if not hasattr(self,"rate_getter"):
+			raise SyntaxError(f"No rate function was assigned to variable-rate event {self._action.__name__}.")
 		self.shape = np.shape(self.rate_getter(self._parent))
 		self.check_dim()
 
