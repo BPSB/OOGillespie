@@ -1,8 +1,8 @@
 import numpy as np
 import random
 from inspect import signature
-from itertools import product, chain
-from functools import partialmethod, partial
+from itertools import product
+from functools import partial
 
 # Classes for events
 class Event(object):
