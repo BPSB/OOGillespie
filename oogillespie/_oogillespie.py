@@ -15,7 +15,7 @@ class Event(object):
 		if self.dim != len(shape):
 			raise SyntaxError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
 		self._par_combos = list(product(*map(range,shape)))
-		self._transposed_par_combos = tuple(zip(*self._par_combos))
+		self._transposed_par_combos = tuple(map(np.array,zip(*self._par_combos)))
 	
 	def actions(self):
 		for combo in self._par_combos:
