@@ -7,18 +7,24 @@ from functools import partialmethod, partial
 # Classes for events
 class Event(object):
 	def __init__(self,function):
-		self.action = function
-		self.dim = len(signature(self.action).parameters)-1
+		self._action = function
+		self.dim = len(signature(self._action).parameters)-1
 	
 	def check_dim(self):
 		if self.dim != len(self.shape):
-			raise SyntaxError(f"Length of rate does not match number of arguments of event {self.action.__name__}.")
+			raise SyntaxError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
 	
 	def par_combos(self):
-		pars = list(signature(self.action).parameters.keys())[1:]
+		pars = list(signature(self._action).parameters.keys())[1:]
 		for combo in product(*map(range,self.shape)):
 			kwargs = dict(zip(pars,combo))
 			yield combo, kwargs
+	
+	def actions(self):
+		return [
+				partial(self._action,self.parent,**kwargs)
+				for _,kwargs in self.par_combos()
+			]
 
 class FixedRateEvent(Event):
 	def __init__(self,function,rates):
@@ -40,7 +46,7 @@ class VariableRateEvent(Event):
 		try:
 			return self._rate_getter
 		except AttributeError:
-			raise SyntaxError(f"No rate function was assigned to variable-rate event {self.action.__name__}.")
+			raise SyntaxError(f"No rate function was assigned to variable-rate event {self._action.__name__}.")
 	
 	def get_rates(self):
 		rates = np.array(self.rate_getter(self.parent))
@@ -95,15 +101,14 @@ class Gillespie(object):
 		self.rate_getters = []
 		
 		for name,member in self._members(FixedRateEvent):
+			member.parent = self
+			self.actions.extend(member.actions())
 			for combo,kwargs in member.par_combos():
-				if member._rates[combo]:
-					self.actions.append(partial(member.action,**kwargs))
-					self.constant_rates.append(member._rates[combo])
+				self.constant_rates.append(member._rates[combo])
 		
 		for name,member in self._members(VariableRateEvent):
 			member.parent = self
-			for combo,kwargs in member.par_combos():
-				self.actions.append(partial(member.action,**kwargs))
+			self.actions.extend(member.actions())
 			self.rate_getters.append(member.get_rates)
 		
 		if not self.actions:
@@ -156,7 +161,7 @@ class Gillespie(object):
 		self.steps += 1
 		self.time += dt
 		
-		self.R.choices(self.actions,cum_weights=cum_rates)[0](self)
+		self.R.choices(self.actions,cum_weights=cum_rates)[0]()
 		return self.state()
 	
 	def __iter__(self):
