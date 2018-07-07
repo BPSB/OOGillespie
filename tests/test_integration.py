@@ -1,6 +1,7 @@
 from oogillespie import Gillespie
 from math import sqrt
 from pytest import approx, fixture, mark
+from numpy import diag
 
 def binomial_approx(n,p):
 	return approx(n*p,abs=3*sqrt(n*p*(1-p)))
@@ -72,10 +73,30 @@ class VariableRateMultiEventProcess(Gillespie):
 	def state(self):
 		return self.N
 
+class VariableRateMultiEventProcess2D(Gillespie):
+	def initialise(self):
+		self.N = [0,0,0]
+	
+	@Gillespie.event
+	def increase(self,i,j):
+		assert i==j
+		if i<3:
+			self.N[i] += 1
+		else:
+			raise AssertionError("This event should never happen")
+	
+	@increase.rate
+	def increase_rate(self):
+		return diag(rates)
+	
+	def state(self):
+		return self.N
+
 @mark.parametrize("Process",[
 		SimpleProcess,
 		MultiEventProcess,
 		VariableRateMultiEventProcess,
+		VariableRateMultiEventProcess2D,
 	])
 class TestIntegration(object):
 	@fixture
