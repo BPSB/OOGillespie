@@ -15,7 +15,7 @@ class EventBase(object):
 			raise SyntaxError(f"Length of rate does not match number of arguments of event {self.action.__name__}.")
 	
 	def par_combos(self):
-		pars = list(signature(self.action).parameters.keys())[1:] #TODO list needed?
+		pars = list(signature(self.action).parameters.keys())[1:]
 		for combo in product(*map(range,self.shape)):
 			kwargs = dict(zip(pars,combo))
 			yield combo, kwargs
@@ -112,7 +112,7 @@ class Gillespie(object):
 				self.rate_getters.append(member.get_rates)
 		
 		if not self.actions:
-			raise SyntaxError("No event defined. You need to mark at least one method as an event by using the Gillespie.event decorator.")
+			raise SyntaxError("No event (with non-zero rate) defined. You need to mark at least one method as an event by using the Gillespie.event decorator.")
 	
 	def _members(self):
 		visited = set()
