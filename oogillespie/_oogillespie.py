@@ -1,18 +1,61 @@
 import numpy as np
 import random
+from inspect import signature
+from itertools import product, chain
+from functools import partialmethod, partial
 
 # Classes for events
-class Event(object):
+class EventBase(object):
 	def __init__(self,function):
 		self.action = function
+		self.dim = len(signature(self.action).parameters)-1
 	
-	def rate(self,function):
-		self.rate_getter = function
+	def check_dim(self):
+		if self.dim != len(self.shape):
+			raise SyntaxError(f"Length of rate does not match number of arguments of event {self.action.__name__}.")
+	
+	def par_combos(self):
+		pars = list(signature(self.action).parameters.keys())[1:] #TODO list needed?
+		for combo in product(*map(range,self.shape)):
+			kwargs = dict(zip(pars,combo))
+			yield combo, kwargs
 
-class FixedRateEvent(object):
-	def __init__(self,function,rate):
-		self.action = function
-		self._rate = rate
+class FixedRateEvent(EventBase):
+	def __init__(self,function,rates):
+		super().__init__(function)
+		self._rates = np.array(rates)
+		self.shape = self._rates.shape
+		self.check_dim()
+	
+	def get_rates(self):
+		for combo,_ in self.par_combos():
+			yield self._rates[combo]
+
+class Event(EventBase):
+	def rate(self,function):
+		self._rate_getter = function
+	
+	@property
+	def rate_getter(self):
+		try:
+			return self._rate_getter
+		except AttributeError:
+			raise SyntaxError(f"No rate function was assigned to variable-rate event {self.action.__name__}.")
+	
+	def get_rates(self):
+		rates = np.array(self.rate_getter(self.parent))
+		for combo,_ in self.par_combos():
+			yield rates[combo]
+	
+	@property
+	def shape(self):
+		return self._shape
+	
+	@shape.setter
+	def shape(self,new_shape):
+		self._shape = new_shape
+		self.check_dim()
+
 
 class Gillespie(object):
 	"""
@@ -53,17 +96,20 @@ class Gillespie(object):
 		
 		for name,member in self._members():
 			if isinstance(member,FixedRateEvent):
-				self.actions.append(member.action)
-				self.constant_rates.append(member._rate)
+				for combo,kwargs in member.par_combos():
+					if member._rates[combo]:
+						self.actions.append(partial(member.action,**kwargs))
+						self.constant_rates.append(member._rates[combo])
 		
 		for name,member in self._members():
 			if isinstance(member,Event):
-				self.actions.append(member.action)
-				try:
-					rate_getter = member.rate_getter
-				except AttributeError:
-					raise SyntaxError(f"No rate function was assigned to variable-rate event {name}.")
-				self.rate_getters.append(rate_getter)
+				member.shape = np.shape(member.rate_getter(self))
+				
+				for combo,kwargs in member.par_combos():
+					self.actions.append(partial(member.action,**kwargs))
+				
+				member.parent = self
+				self.rate_getters.append(member.get_rates)
 		
 		if not self.actions:
 			raise SyntaxError("No event defined. You need to mark at least one method as an event by using the Gillespie.event decorator.")
@@ -95,8 +141,9 @@ class Gillespie(object):
 	
 	def _get_cum_rates(self):
 		return np.cumsum(self.constant_rates + [
-				rate_getter(self)
+				rate
 				for rate_getter in self.rate_getters
+				for rate in rate_getter()
 			])
 	
 	def __next__(self):
