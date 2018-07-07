@@ -81,6 +81,8 @@ class Gillespie(object):
 		self.initialise(**kwargs)
 		self._get_events()
 		self._n = len(self._actions)
+		# dummy array for efficiency:
+		self._rates = np.empty(self._n)
 	
 	def _get_events(self):
 		self._actions = []
@@ -109,11 +111,15 @@ class Gillespie(object):
 	def event(arg):
 		"""
 		Decorator that marks a method as an event.
-		You can use this either with no or one argument:
+		There are several valid use cases:
 		
-		* If called with an argument, this must be a number specifying the rate of the event.
+		* The event method has no arguments other than `self`; the decorator itself has a non-negative number as an argument. In this case, the number specifies the rate of the event.
 		
-		* If called without argument, the function obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate of that event.
+		* The event has one argument other than self. The decorator is an iterable of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the iterable is passed as an argument to the event method.
+
+		* A generalisation of the above: The event has k arguments other than `self`. The decorator has a nested iterable of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the iterable is passed as argument to the event method.
+		
+		* The decorator is used without an argument. In this case the method obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate(s) of that event in whatever of the formats given above (numbers, iterable of number, nested iterable of numbers, …) corresponds to the number of arguments of the method.
 		"""
 		
 		if callable(arg):
@@ -124,10 +130,14 @@ class Gillespie(object):
 			return wrapper
 	
 	def _get_cum_rates(self):
-		return np.cumsum(np.hstack((
-				rate_getter()
-				for rate_getter in self._rate_getters
-			)))
+		i = 0
+		for rate_getter in self._rate_getters:
+			rates = rate_getter()
+			j = i+rates.size
+			self._rates[i:j] = rates
+			i = j
+		
+		return np.cumsum(self._rates)
 	
 	def __next__(self):
 		cum_rates = self._get_cum_rates()
