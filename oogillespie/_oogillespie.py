@@ -15,14 +15,14 @@ class Event(object):
 		if self.dim != len(shape):
 			raise SyntaxError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
 		self._par_combos = list(product(*map(range,shape)))
+		self._transposed_par_combos = tuple(zip(*self._par_combos))
 	
 	def actions(self):
 		for combo in self._par_combos:
 			yield partial(self._action,self.parent,*combo)
 	
 	def get_rates(self):
-		for combo in self._par_combos:
-			yield self._rates[combo]
+		return self._rates[self._transposed_par_combos]
 
 class FixedRateEvent(Event):
 	def __init__(self,function,rates):
@@ -124,11 +124,10 @@ class Gillespie(object):
 			return wrapper
 	
 	def _get_cum_rates(self):
-		return np.cumsum(np.fromiter((
-				rate
+		return np.cumsum(np.hstack((
+				rate_getter()
 				for rate_getter in self._rate_getters
-				for rate in rate_getter()
-			),dtype=float,count=self._n))
+			)))
 	
 	def __next__(self):
 		cum_rates = self._get_cum_rates()
