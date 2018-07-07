@@ -9,7 +9,7 @@ def binomial_approx(n,p):
 def poisson_approx(t,λ):
 	return approx(t*λ,3*sqrt(λ))
 
-rates = (1,2,3,0)
+rates = (1,2,3,0,0)
 max_time = 2e3
 
 class ProcessBase(Gillespie):
@@ -45,6 +45,15 @@ class MultiEventProcess(ProcessBase):
 	def increase(self,i):
 		self.N[i] += 1
 
+class TwoMultiEventProcess(ProcessBase):
+	@Gillespie.event(rates[:2])
+	def increase_01(self,i):
+		self.N[i] += 1
+	
+	@Gillespie.event(rates[2:])
+	def increase_2(self,i):
+		self.N[i+2] += 1
+
 class MultiEventProcess2D(ProcessBase):
 	@Gillespie.event(diag(rates))
 	def increase(self,i,j):
@@ -74,6 +83,7 @@ class VariableRateMultiEventProcess2D(ProcessBase):
 		SimpleProcess,
 		MultiEventProcess,
 		MultiEventProcess2D,
+		TwoMultiEventProcess,
 		VariableRateMultiEventProcess,
 		VariableRateMultiEventProcess2D,
 	])
