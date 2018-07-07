@@ -79,22 +79,22 @@ class Gillespie(object):
 		self.steps = 0
 		self.max_steps = kwargs.pop("max_steps",1000)
 		self.max_t = kwargs.pop("max_t",np.inf)
-		self.R = random.Random(kwargs.pop("seed",None))
+		self._R = random.Random(kwargs.pop("seed",None))
 		
 		self.initialise(**kwargs)
 		self._get_events()
 	
 	def _get_events(self):
-		self.actions = []
-		self.rate_getters = []
+		self._actions = []
+		self._rate_getters = []
 		
 		for name,member in self._members(Event):
 			member.parent = self
-			self.actions.extend(member.actions())
-			self.rate_getters.append(member.get_rates)
+			self._actions.extend(member.actions())
+			self._rate_getters.append(member.get_rates)
 		
-		if not self.actions:
-			raise SyntaxError("No event (with non-zero rate) defined. You need to mark at least one method as an event by using the Gillespie.event decorator.")
+		if not self._actions:
+			raise SyntaxError("No event defined. You need to mark at least one method as an event by using the Gillespie.event decorator.")
 	
 	def _members(self,Class):
 		"""
@@ -128,14 +128,14 @@ class Gillespie(object):
 	def _get_cum_rates(self):
 		return np.cumsum([
 				rate
-				for rate_getter in self.rate_getters
+				for rate_getter in self._rate_getters
 				for rate in rate_getter()
 			])
 	
 	def __next__(self):
 		cum_rates = self._get_cum_rates()
 		total_rate = cum_rates[-1]
-		dt = self.R.expovariate(total_rate)
+		dt = self._R.expovariate(total_rate)
 		
 		if self.time+dt>self.max_t or self.steps>=self.max_steps:
 			raise StopIteration
@@ -143,7 +143,7 @@ class Gillespie(object):
 		self.steps += 1
 		self.time += dt
 		
-		self.R.choices(self.actions,cum_weights=cum_rates)[0]()
+		self._R.choices(self._actions,cum_weights=cum_rates)[0]()
 		return self.state()
 	
 	def __iter__(self):
