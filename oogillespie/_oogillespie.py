@@ -55,16 +55,7 @@ class VariableRateEvent(Event):
 	def parent(self,new_parent):
 		self._parent = new_parent
 		self.shape = np.shape(self.rate_getter(self._parent))
-
-	@property
-	def shape(self):
-		return self._shape
-	
-	@shape.setter
-	def shape(self,new_shape):
-		self._shape = new_shape
 		self.check_dim()
-
 
 class Gillespie(object):
 	"""
