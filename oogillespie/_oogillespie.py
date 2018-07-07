@@ -27,7 +27,7 @@ class Event(object):
 class FixedRateEvent(Event):
 	def __init__(self,function,rates):
 		super().__init__(function)
-		self._rates = np.array(rates)
+		self._rates = np.asarray(rates)
 		self._initialise()
 
 class VariableRateEvent(Event):
@@ -36,7 +36,7 @@ class VariableRateEvent(Event):
 	
 	@property
 	def _rates(self):
-		return np.array(self.rate_getter(self.parent))
+		return np.asarray(self.rate_getter(self.parent))
 	
 	@property
 	def parent(self):
