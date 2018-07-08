@@ -98,7 +98,7 @@ class Gillespie(object):
 	
 	def _members(self,Class):
 		"""
-		Provides an iterator over all members of self that are an instance of Class.
+		Provides an iterator over all members of `self` that are an instance of `Class`.
 		"""
 		visited = set()
 		for cls in [self.__class__] + self.__class__.mro():
@@ -115,11 +115,11 @@ class Gillespie(object):
 		
 		* The event method has no arguments other than `self`; the decorator itself has a non-negative number as an argument. In this case, the number specifies the rate of the event.
 		
-		* The event has one argument other than self. The decorator is an iterable of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the iterable is passed as an argument to the event method.
+		* The event has one argument other than `self`. The decorator is a sequence of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the sequence is passed as an argument to the event method.
 
-		* A generalisation of the above: The event has k arguments other than `self`. The decorator has a nested iterable of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the iterable is passed as argument to the event method.
+		* A generalisation of the above: The event has k arguments other than `self`. The decorator has a nested sequence of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the sequence is passed as argument to the event method.
 		
-		* The decorator is used without an argument. In this case the method obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate(s) of that event in whatever of the formats given above (numbers, iterable of number, nested iterable of numbers, …) corresponds to the number of arguments of the method.
+		* The decorator is used without an argument. In this case the method obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate(s) of that event in whatever of the formats given above (numbers, sequence of number, nested sequence of numbers, …) corresponds to the number of arguments of the method.
 		"""
 		
 		if callable(arg):
