@@ -11,8 +11,6 @@ In contrast to other implementations it embraces object-oriented programming, wh
 
 * It is very flexible.
 
-* It doesn’t yet support indexed events, e.g., for birth and death of several molecules. (But if you desire this, just raise an issue and I will probably quickly implement it.)
-
 * It is not fast.
 
 A Simple Example: Birth and Death
