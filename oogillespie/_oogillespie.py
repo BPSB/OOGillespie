@@ -4,6 +4,9 @@ from inspect import signature
 from itertools import product
 from functools import partial
 
+class GillespieUsageError(SyntaxError):
+	pass
+
 # Classes for events
 class Event(object):
 	def __init__(self,function):
@@ -13,7 +16,7 @@ class Event(object):
 	def _initialise(self):
 		shape = self._rates.shape
 		if self.dim != len(shape):
-			raise SyntaxError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
+			raise GillespieUsageError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
 		self._par_combos = list(product(*map(range,shape)))
 		self._transposed_par_combos = tuple(map(np.array,zip(*self._par_combos)))
 	
@@ -45,7 +48,7 @@ class VariableRateEvent(Event):
 	@parent.setter
 	def parent(self,new_parent):
 		if not hasattr(self,"rate_getter"):
-			raise SyntaxError(f"No rate function was assigned to variable-rate event {self._action.__name__}.")
+			raise GillespieUsageError(f"No rate function was assigned to variable-rate event {self._action.__name__}.")
 		self._parent = new_parent
 		self._initialise()
 
@@ -94,7 +97,7 @@ class Gillespie(object):
 			self._rate_getters.append(member.get_rates)
 		
 		if not self._actions:
-			raise SyntaxError("No event defined. You need to mark at least one method as an event by using the Gillespie.event decorator.")
+			raise GillespieUsageError("No event defined. You need to mark at least one method as an event by using the Gillespie.event decorator.")
 	
 	def _members(self,Class):
 		"""
@@ -117,7 +120,7 @@ class Gillespie(object):
 		
 		* The event has one argument other than `self`. The decorator is a sequence of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the sequence is passed as an argument to the event method.
 
-		* A generalisation of the above: The event has k arguments other than `self`. The decorator has a nested sequence of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the sequence is passed as argument to the event method.
+		* A generalisation of the above: The event has k arguments other than `self`. The decorator has a nested sequence of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method.
 		
 		* The decorator is used without an argument. In this case the method obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate(s) of that event in whatever of the formats given above (numbers, sequence of number, nested sequence of numbers, …) corresponds to the number of arguments of the method.
 		"""
@@ -160,11 +163,11 @@ class Gillespie(object):
 		"""
 		You have to overwrite this method. It is called when initialising the integrator. Use it to set internal parameters to initial values. It gets passed surplus arguments from the constructor.
 		"""
-		raise SyntaxError("You have to overwrite the initiate method when inheriting from Gillespie")
+		raise GillespieUsageError("You have to overwrite the initiate method when inheriting from Gillespie")
 	
 	def state(self):
 		"""
 		You have to overwrite this method. It is called to determine the return value when iterating/simulating. Use it to return whatever properties you are interested in.
 		"""
-		raise SyntaxError("You have to overwrite the state method when inheriting from Gillespie")
+		raise GillespieUsageError("You have to overwrite the state method when inheriting from Gillespie")
 
