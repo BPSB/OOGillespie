@@ -42,20 +42,19 @@ To achieve this, we pass a sequence (`α`) instead of a number as an argument t
 
 For the transformation event, two things change:
 
-* The rate depends on the current state. This is handled like before, i.e., by not passing an argument to the event decorator.
-* The event depends on two parameters. This is reflected by the parameters `i` and `j` of `transform` and `transform_prob` returning a two-dimensional array of rates instead of a number.
+* The rate depends on the current state. This is handled like before, i.e., by passing a method instead of a number to the `event` decorator.
+* The event depends on two parameters. This is reflected by the parameters `i` and `j` of `transform` and `transform_rate` returning a two-dimensional array of rates instead of a number.
 
 .. literalinclude:: ../examples/rock_paper_scissors.py
 	:start-after: example-st\u0061rt
 	:dedent: 1
-	:lines: 23-30
+	:lines: 23-29
 
 Altogether our code would look like this:
 
 .. literalinclude:: ../examples/rock_paper_scissors.py
 	:start-after: example-st\u0061rt
 	:dedent: 1
-	:lines: 1-33
 """
 
 if __name__ == "__main__":
@@ -78,19 +77,17 @@ if __name__ == "__main__":
 		def state(self):
 			return self.time,self.N
 		
-		Gillespie.event(α)
+		@Gillespie.event(α)
 		def birth(self,i):
 			self.N[i] += 1
 		
-		@Gillespie.event
+		def transform_rate(self):
+			return self.N*A*self.N[:,None]
+		
+		@Gillespie.event(transform_rate)
 		def transform(self,i,j):
 			self.N[i] -= 1
 			self.N[j] += 1
-		
-		@transform.rate
-		def transform_prob(self):
-			return self.N*A*self.N[:,None]
 	
 	for time,N in RPS(max_steps=100000):
 		print(time,*N)
-

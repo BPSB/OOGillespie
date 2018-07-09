@@ -26,8 +26,9 @@ class ProcessWithoutRate(Gillespie):
 	def do_nothing(self): pass
 
 def test_no_rate():
-	with raises(GillespieUsageError):
+	with raises(GillespieUsageError) as exc:
 		ProcessWithoutRate()
+	assert "no rate argument" in exc.value.args[0]
 
 class ProcessWithoutEvent(Gillespie):
 	def initialise(self): pass

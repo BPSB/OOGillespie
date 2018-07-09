@@ -34,12 +34,13 @@ class FixedRateEvent(Event):
 		self._initialise()
 
 class VariableRateEvent(Event):
-	def rate(self,function):
-		self.rate_getter = function
+	def __init__(self,function,rates):
+		super().__init__(function)
+		self.rate_function = rates
 	
 	@property
 	def _rates(self):
-		return np.asarray(self.rate_getter(self.parent))
+		return np.asarray(self.rate_function(self.parent))
 	
 	@property
 	def parent(self):
@@ -47,8 +48,6 @@ class VariableRateEvent(Event):
 	
 	@parent.setter
 	def parent(self,new_parent):
-		if not hasattr(self,"rate_getter"):
-			raise GillespieUsageError(f"No rate function was assigned to variable-rate event {self._action.__name__}.")
 		self._parent = new_parent
 		self._initialise()
 
@@ -96,6 +95,9 @@ class Gillespie(object):
 			self._actions.extend(member.actions())
 			self._rate_getters.append(member.get_rates)
 		
+		for rateless_event in self._members(Gillespie.event):
+			raise GillespieUsageError(f"Decorator for event {rateless_event.__name__} has no rate argument.")
+		
 		if not self._actions:
 			raise GillespieUsageError("No event defined. You need to mark at least one method as an event by using the Gillespie.event decorator.")
 	
@@ -111,26 +113,31 @@ class Gillespie(object):
 						yield member
 					visited.add(name)
 	
-	def event(arg):
+	class event(object):
 		"""
 		Decorator that marks a method as an event.
-		There are several valid use cases:
 		
-		* The event method has no arguments other than `self`; the decorator itself has a non-negative number as an argument. In this case, the number specifies the rate of the event.
+		There are several valid use cases of the argument `rate` of the decorator and the number of arguments of the decorated method:
 		
-		* The event has one argument other than `self`. The decorator is a sequence of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the sequence is passed as an argument to the event method.
+		* The event method has no arguments other than `self`, and `rate` is a non-negative number specifying the rate of the event.
 
-		* A generalisation of the above: The event has k arguments other than `self`. The decorator has a nested sequence of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method. All sequences on the same level must have the same length.
-		
-		* The decorator is used without an argument. In this case the method obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate(s) of that event in whatever of the formats given above (numbers, sequence of number, nested sequence of numbers, …) corresponds to the number of arguments of the method.
+		* The event has one argument other than `self`, and `rate` is a sequence of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the sequence is passed as an argument to the event method.
+
+		* A generalisation of the above: The event has k arguments other than `self`, and `rate` is a nested sequence of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method. All sequences on the same level must have the same length.
+
+		* `rate` is a method returning a number or (nested) sequence of numbers as above. Note that the method must be defined before the event method.
 		"""
 		
-		if callable(arg):
-			return VariableRateEvent(arg)
-		else:
-			def wrapper(function):
-				return FixedRateEvent(function,arg)
-			return wrapper
+		def __init__(self,rate):
+			self.rate = rate
+			if callable(rate):
+				self.__name__ = rate.__name__
+		
+		def __call__(self,function):
+			if callable(self.rate):
+				return VariableRateEvent(function,self.rate)
+			else:
+				return FixedRateEvent(function,self.rate)
 	
 	def _get_cum_rates(self):
 		i = 0

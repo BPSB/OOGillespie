@@ -24,13 +24,12 @@ class SimpleProcess(ProcessBase):
 	def increase_N0(self):
 		self.N[0] += 1
 	
-	@Gillespie.event
-	def increase_N1(self):
-		self.N[1] += 1
-	
-	@increase_N1.rate
 	def N1_rate(self):
 		return rates[1]
+	
+	@Gillespie.event(N1_rate)
+	def increase_N1(self):
+		self.N[1] += 1
 	
 	@Gillespie.event(rates[2])
 	def increase_N2(self):
@@ -61,23 +60,21 @@ class MultiEventProcess2D(ProcessBase):
 		self.N[i] += 1
 
 class VariableRateMultiEventProcess(ProcessBase):
-	@Gillespie.event
-	def increase(self,i):
-		self.N[i] += 1
-	
-	@increase.rate
 	def increase_rate(self):
 		return rates
+	
+	@Gillespie.event(increase_rate)
+	def increase(self,i):
+		self.N[i] += 1
 
 class VariableRateMultiEventProcess2D(ProcessBase):
-	@Gillespie.event
+	def increase_rate(self):
+		return diag(rates)
+	
+	@Gillespie.event(increase_rate)
 	def increase(self,i,j):
 		assert i==j
 		self.N[i] += 1
-	
-	@increase.rate
-	def increase_rate(self):
-		return diag(rates)
 
 @mark.parametrize("Process",[
 		SimpleProcess,
