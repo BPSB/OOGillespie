@@ -27,6 +27,9 @@ Command reference
 =================
 
 .. automodule:: _oogillespie
+.. autoclass:: Event
+    :members:
+
 .. autoclass:: Gillespie
     :members:
 
