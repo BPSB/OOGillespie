@@ -54,7 +54,7 @@ class VariableRateEvent(Event):
 
 class Gillespie(object):
 	"""
-	This class only works if inherited from and if the methods `initialise` and `state` are replaced. Also, at least method has to be marked as an event with the respective decorator.
+	This class only works if inherited from and if the methods `initialise` and `state` are replaced. Also, at least one method has to be marked as an event with the respective decorator.
 	
 	The constructor takes the following arguments.
 	All further arguments are forwarded to `initialise`.
