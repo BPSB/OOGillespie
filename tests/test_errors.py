@@ -40,16 +40,19 @@ def test_no_event():
 	with raises(GillespieUsageError):
 		ProcessWithoutEvent()
 
-class TestDimensionMismatch(object):
-	def test_no_arg(self):
-		with raises(GillespieUsageError):
-			class ProcessWithRateDimensionMismatch(ProcessWithoutEvent):
-				@event([1,2])
-				def do_nothing(self): pass
-	
-	def test_too_many_args(self):
-		with raises(GillespieUsageError):
-			class ProcessWithRateDimensionMismatch(ProcessWithoutEvent):
-				@event([[1,2],[3,4]])
-				def do_nothing(self,i,j,k): pass
+class ProcessWithRateDimensionMismatch(ProcessWithoutEvent):
+	@event([1,2])
+	def do_nothing(self): pass
+
+def test_no_arg():
+	with raises(GillespieUsageError):
+		ProcessWithRateDimensionMismatch()
+
+class ProcessWithRateDimensionMismatch2(ProcessWithoutEvent):
+	@event([[1,2],[3,4]])
+	def do_nothing(self,i,j,k): pass
+
+def test_too_many_args():
+	with raises(GillespieUsageError):
+		ProcessWithRateDimensionMismatch2()
 

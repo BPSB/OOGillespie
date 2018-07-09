@@ -8,55 +8,12 @@ class GillespieUsageError(SyntaxError):
 	pass
 
 # Classes for events
-class Event(object):
-	def __init__(self,function):
-		self._action = function
-		self.dim = len(signature(self._action).parameters)-1
-	
-	def _initialise(self):
-		shape = self._rates.shape
-		if self.dim != len(shape):
-			raise GillespieUsageError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
-		self._par_combos = list(product(*map(range,shape)))
-		self._transposed_par_combos = tuple(map(np.array,zip(*self._par_combos)))
-	
-	def actions(self):
-		for combo in self._par_combos:
-			yield partial(self._action,self.parent,*combo)
-	
-	def get_rates(self):
-		return self._rates[self._transposed_par_combos]
-
-class FixedRateEvent(Event):
-	def __init__(self,function,rates):
-		super().__init__(function)
-		self._rates = np.asarray(rates)
-		self._initialise()
-
-class VariableRateEvent(Event):
-	def __init__(self,function,rates):
-		super().__init__(function)
-		self.rate_function = rates
-	
-	@property
-	def _rates(self):
-		return np.asarray(self.rate_function(self.parent))
-	
-	@property
-	def parent(self):
-		return self._parent
-	
-	@parent.setter
-	def parent(self,new_parent):
-		self._parent = new_parent
-		self._initialise()
-
 class event(object):
 	"""
 	Decorator that marks a method as an event.
-	
+
 	There are several valid use cases of the argument `rate` of the decorator and the number of arguments of the decorated method:
-	
+
 	* The event method has no arguments other than `self`, and `rate` is a non-negative number specifying the rate of the event.
 
 	* The event has one argument other than `self`, and `rate` is a sequence of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the sequence is passed as an argument to the event method.
@@ -66,16 +23,48 @@ class event(object):
 	* `rate` is a method returning a number or (nested) sequence of numbers as above. Note that the method must be defined before the event method.
 	"""
 	
-	def __init__(self,rate):
-		self.rate = rate
-		if callable(rate):
-			self.__name__ = rate.__name__
+	def __init__(self,rates):
+		self._variable = callable(rates)
+		if self._variable:
+			self.__name__ = rates.__name__
+			self._rate_function = rates
+		else:
+			self._rates = np.asarray(rates)
 	
 	def __call__(self,function):
-		if callable(self.rate):
-			return VariableRateEvent(function,self.rate)
+		self._action = function
+		self.__name__ = function.__name__
+		self.dim = len(signature(self._action).parameters)-1
+		return self
+	
+	def actions(self):
+		for combo in self._par_combos:
+			yield partial(self._action,self.parent,*combo)
+	
+	@property
+	def rates(self):
+		if self._variable:
+			return np.asarray(self._rate_function(self.parent))
 		else:
-			return FixedRateEvent(function,self.rate)
+			return self._rates
+	
+	def get_rates(self):
+		return self.rates[self._transposed_par_combos]
+	
+	@property
+	def parent(self):
+		return self._parent
+	
+	@parent.setter
+	def parent(self,new_parent):
+		if not hasattr(self,"_action"):
+			raise GillespieUsageError(f"Decorator for event {self.__name__} has no rate argument.")
+		self._parent = new_parent
+		shape = self.rates.shape
+		if self.dim != len(shape):
+			raise GillespieUsageError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
+		self._par_combos = list(product(*map(range,shape)))
+		self._transposed_par_combos = tuple(map(np.array,zip(*self._par_combos)))
 
 class Gillespie(object):
 	"""
@@ -116,14 +105,14 @@ class Gillespie(object):
 		self._actions = []
 		self._rate_getters = []
 		
-		for member in self._members(Event):
+		for member in self._members(event):
 			member.parent = self
 			self._actions.extend(member.actions())
 			self._rate_getters.append(member.get_rates)
 		
-		for rateless_event in self._members(event):
-			raise GillespieUsageError(f"Decorator for event {rateless_event.__name__} has no rate argument.")
-		
+		# for rateless_event in self._members(event):
+		# 	raise GillespieUsageError(f"Decorator for event {rateless_event.__name__} has no rate argument.")
+		#
 		if not self._actions:
 			raise GillespieUsageError("No event defined. You need to mark at least one method as an event by using the event decorator.")
 	

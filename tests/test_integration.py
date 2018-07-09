@@ -10,7 +10,7 @@ def poisson_approx(t,λ):
 	return approx(t*λ,3*sqrt(λ))
 
 rates = (1,2,3,0,0)
-max_time = 2e3
+max_time = 2e2
 
 class ProcessBase(Gillespie):
 	def initialise(self):
