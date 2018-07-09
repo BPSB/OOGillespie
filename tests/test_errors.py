@@ -61,8 +61,7 @@ def test_too_many_args():
 		ProcessWithRateDimensionMismatch2()
 	assert "does not match" in exc.value.args[0]
 
-
-def test_too_many_args():
+def test_negative_rate():
 	with raises(GillespieUsageError) as exc:
 		class ProcessWithNegativeEventRate(ProcessWithoutEvent):
 			@Event([0,2,-1])
