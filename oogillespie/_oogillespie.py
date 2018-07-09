@@ -7,8 +7,7 @@ from functools import partial
 class GillespieUsageError(SyntaxError):
 	pass
 
-# Classes for events
-class event(object):
+class Event(object):
 	"""
 	Decorator that marks a method as an event.
 
@@ -105,16 +104,13 @@ class Gillespie(object):
 		self._actions = []
 		self._rate_getters = []
 		
-		for member in self._members(event):
+		for member in self._members(Event):
 			member.parent = self
 			self._actions.extend(member.actions())
 			self._rate_getters.append(member.get_rates)
 		
-		# for rateless_event in self._members(event):
-		# 	raise GillespieUsageError(f"Decorator for event {rateless_event.__name__} has no rate argument.")
-		#
 		if not self._actions:
-			raise GillespieUsageError("No event defined. You need to mark at least one method as an event by using the event decorator.")
+			raise GillespieUsageError("No event defined. You need to mark at least one method as an event by using the Event decorator.")
 	
 	def _members(self,Class):
 		"""

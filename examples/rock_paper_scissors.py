@@ -33,7 +33,7 @@ Nothing new happens in the `initialise` and `state` functions, except that `N` i
 
 In contrast to the previous example, there are now three different birth events, one for each population. However, being healthily lazy, we do not want to write three nearly identical functions for this but want to have a parametrised event, where the parameter specifies which population increases.
 
-To achieve this, we pass a sequence (`α`) instead of a number as an argument to the `event` decorator. This way, we specify that the birth event comes in different versions with different rates, one for each element of `α`. Whenever such an event happens, the respective index of `α` is passed to `birth` as an additional argument.
+To achieve this, we pass a sequence (`α`) instead of a number as an argument to the `Event` decorator. This way, we specify that the birth event comes in different versions with different rates, one for each element of `α`. Whenever such an event happens, the respective index of `α` is passed to `birth` as an additional argument.
 
 .. literalinclude:: ../examples/rock_paper_scissors.py
 	:start-after: example-st\u0061rt
@@ -42,7 +42,7 @@ To achieve this, we pass a sequence (`α`) instead of a number as an argument t
 
 For the transformation event, two things change:
 
-* The rate depends on the current state. This is handled like before, i.e., by passing a method instead of a number to the `event` decorator.
+* The rate depends on the current state. This is handled like before, i.e., by passing a method instead of a number to the `Event` decorator.
 * The event depends on two parameters. This is reflected by the parameters `i` and `j` of `transform` and `transform_rate` returning a two-dimensional array of rates instead of a number.
 
 .. literalinclude:: ../examples/rock_paper_scissors.py
@@ -59,7 +59,7 @@ Altogether our code would look like this:
 
 if __name__ == "__main__":
 	# example-start
-	from oogillespie import Gillespie, event
+	from oogillespie import Gillespie, Event
 	import numpy
 	
 	α = numpy.array([ 0.2, 0.01, 0.01 ])
@@ -77,14 +77,14 @@ if __name__ == "__main__":
 		def state(self):
 			return self.time,self.N
 		
-		@event(α)
+		@Event(α)
 		def birth(self,i):
 			self.N[i] += 1
 		
 		def transform_rate(self):
 			return self.N*A*self.N[:,None]
 		
-		@event(transform_rate)
+		@Event(transform_rate)
 		def transform(self,i,j):
 			self.N[i] -= 1
 			self.N[j] += 1

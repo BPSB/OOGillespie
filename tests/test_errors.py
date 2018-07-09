@@ -1,4 +1,4 @@
-from oogillespie import Gillespie, GillespieUsageError, event
+from oogillespie import Gillespie, GillespieUsageError, Event
 from pytest import raises
 
 class ProcessWithoutInitialise(Gillespie):
@@ -11,7 +11,7 @@ def test_no_initialise():
 class ProcessWithoutState(Gillespie):
 	def initialise(self): pass
 	
-	@event(1)
+	@Event(1)
 	def do_nothing(self): pass
 
 def test_no_state():
@@ -22,7 +22,7 @@ def test_no_state():
 class ProcessWithoutRate(Gillespie):
 	def initialise(self): pass
 	
-	@event
+	@Event
 	def do_nothing(self): pass
 
 def test_no_rate():
@@ -36,12 +36,12 @@ class ProcessWithoutEvent(Gillespie):
 	def state(self):
 		return self.time
 
-def test_no_event():
+def test_no_Event():
 	with raises(GillespieUsageError):
 		ProcessWithoutEvent()
 
 class ProcessWithRateDimensionMismatch(ProcessWithoutEvent):
-	@event([1,2])
+	@Event([1,2])
 	def do_nothing(self): pass
 
 def test_no_arg():
@@ -49,7 +49,7 @@ def test_no_arg():
 		ProcessWithRateDimensionMismatch()
 
 class ProcessWithRateDimensionMismatch2(ProcessWithoutEvent):
-	@event([[1,2],[3,4]])
+	@Event([[1,2],[3,4]])
 	def do_nothing(self,i,j,k): pass
 
 def test_too_many_args():
