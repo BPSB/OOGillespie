@@ -25,9 +25,9 @@ class Event(object):
 	def __init__(self,rates):
 		self._variable = callable(rates)
 		if self._variable:
-			# Retaining name for error message, if called without an argument
-			self.__name__ = rates.__name__
 			self._rate_function = rates
+			# Retaining name for error message, if called without an argument:
+			self.__name__ = rates.__name__
 		else:
 			self._rates = np.asarray(rates)
 	
@@ -37,34 +37,33 @@ class Event(object):
 		self.dim = len(signature(self._action).parameters)-1
 		return self
 	
-	def actions(self):
-		for combo in self._par_combos:
-			yield partial(self._action,self.parent,*combo)
+	@property
+	def _called(self):
+		return hasattr(self,"_action")
 	
 	@property
 	def rates(self):
 		if self._variable:
-			return np.asarray(self._rate_function(self.parent))
+			return np.asarray(self._rate_function(self._parent))
 		else:
 			return self._rates
 	
 	def get_rates(self):
 		return self.rates[self._transposed_par_combos]
 	
-	@property
-	def parent(self):
-		return self._parent
-	
-	@parent.setter
-	def parent(self,new_parent):
-		if not hasattr(self,"_action"):
+	def set_parent(self,parent):
+		if not self._called:
 			raise GillespieUsageError(f"Decorator for event {self.__name__} has no rate argument.")
-		self._parent = new_parent
+		self._parent = parent
 		shape = self.rates.shape
 		if self.dim != len(shape):
-			raise GillespieUsageError(f"Length of rate does not match number of arguments of event {self._action.__name__}.")
+			raise GillespieUsageError(f"Length of rate does not match number of arguments of event {self.__name__}.")
 		self._par_combos = list(product(*map(range,shape)))
 		self._transposed_par_combos = tuple(map(np.array,zip(*self._par_combos)))
+	
+	def actions(self):
+		for combo in self._par_combos:
+			yield partial(self._action,self._parent,*combo)
 
 class Gillespie(object):
 	"""
@@ -106,7 +105,7 @@ class Gillespie(object):
 		self._rate_getters = []
 		
 		for member in self._members(Event):
-			member.parent = self
+			member.set_parent(self)
 			self._actions.extend(member.actions())
 			self._rate_getters.append(member.get_rates)
 		
