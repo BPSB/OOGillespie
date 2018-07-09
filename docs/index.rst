@@ -18,6 +18,10 @@ A Simple Example: Birth and Death
 
 .. automodule:: birth_death
 
+An Advanced Example: Rock, Paper, Scissors
+==========================================
+
+.. automodule:: rock_paper_scissors
 
 Command reference
 =================
