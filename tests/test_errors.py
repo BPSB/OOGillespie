@@ -5,8 +5,9 @@ class ProcessWithoutInitialise(Gillespie):
 	pass
 
 def test_no_initialise():
-	with raises(GillespieUsageError):
+	with raises(GillespieUsageError) as exc:
 		ProcessWithoutInitialise()
+	assert "must overwrite" in exc.value.args[0]
 
 class ProcessWithoutState(Gillespie):
 	def initialise(self): pass
@@ -15,9 +16,10 @@ class ProcessWithoutState(Gillespie):
 	def do_nothing(self): pass
 
 def test_no_state():
-	with raises(GillespieUsageError):
+	with raises(GillespieUsageError) as exc:
 		for state in ProcessWithoutState():
 			pass
+	assert "must overwrite" in exc.value.args[0]
 
 class ProcessWithoutRate(Gillespie):
 	def initialise(self): pass
@@ -37,22 +39,25 @@ class ProcessWithoutEvent(Gillespie):
 		return self.time
 
 def test_no_Event():
-	with raises(GillespieUsageError):
+	with raises(GillespieUsageError) as exc:
 		ProcessWithoutEvent()
+	assert "No event defined." in exc.value.args[0]
 
 class ProcessWithRateDimensionMismatch(ProcessWithoutEvent):
 	@Event([1,2])
 	def do_nothing(self): pass
 
 def test_no_arg():
-	with raises(GillespieUsageError):
+	with raises(GillespieUsageError) as exc:
 		ProcessWithRateDimensionMismatch()
+	assert "does not match" in exc.value.args[0]
 
 class ProcessWithRateDimensionMismatch2(ProcessWithoutEvent):
 	@Event([[1,2],[3,4]])
 	def do_nothing(self,i,j,k): pass
 
 def test_too_many_args():
-	with raises(GillespieUsageError):
+	with raises(GillespieUsageError) as exc:
 		ProcessWithRateDimensionMismatch2()
+	assert "does not match" in exc.value.args[0]
 

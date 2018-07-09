@@ -52,12 +52,15 @@ class Event(object):
 		return self.rates[self._transposed_par_combos]
 	
 	def set_parent(self,parent):
+		self._parent = parent
+		
 		if not self._called:
 			raise GillespieUsageError(f"Decorator for event {self.__name__} has no rate argument.")
-		self._parent = parent
+		
 		shape = self.rates.shape
 		if self.dim != len(shape):
 			raise GillespieUsageError(f"Length of rate does not match number of arguments of event {self.__name__}.")
+		
 		self._par_combos = list(product(*map(range,shape)))
 		self._transposed_par_combos = tuple(map(np.array,zip(*self._par_combos)))
 	
@@ -153,13 +156,13 @@ class Gillespie(object):
 	
 	def initialise(self):
 		"""
-		You have to overwrite this method. It is called when initialising the integrator. Use it to set internal parameters to initial values. It gets passed surplus arguments from the constructor.
+		You must overwrite this method. It is called when initialising the integrator. Use it to set internal parameters to initial values. It gets passed surplus arguments from the constructor.
 		"""
-		raise GillespieUsageError("You have to overwrite the initiate method when inheriting from Gillespie")
+		raise GillespieUsageError("You must overwrite the initiate method when inheriting from Gillespie")
 	
 	def state(self):
 		"""
-		You have to overwrite this method. It is called to determine the return value when iterating/simulating. Use it to return whatever properties you are interested in.
+		You must overwrite this method. It is called to determine the return value when iterating/simulating. Use it to return whatever properties you are interested in.
 		"""
-		raise GillespieUsageError("You have to overwrite the state method when inheriting from Gillespie")
+		raise GillespieUsageError("You must overwrite the state method when inheriting from Gillespie")
 
