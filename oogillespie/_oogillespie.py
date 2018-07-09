@@ -30,6 +30,8 @@ class Event(object):
 			self.__name__ = rates.__name__
 		else:
 			self._rates = np.asarray(rates)
+			if np.any(self._rates<0):
+				raise GillespieUsageError("Rates must be non-negative.")
 	
 	def __call__(self,function):
 		self._action = function
