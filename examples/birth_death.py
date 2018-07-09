@@ -26,7 +26,7 @@ The first of the method we need is `initialise`, which is automatically called u
 	:dedent: 1
 	:lines: 7-8
 
-Next we implement the birth event. For this, we need a method that is called upon such an event and increases :math:`N` by 1. To register this method as an event and specify its rate, we use the decorator `Gillespie.event` and provide the constant rate :math:`α` as an argument:
+Next we implement the birth event. For this, we need a method that is called upon such an event and increases :math:`N` by 1. To register this method as an event and specify its rate, we use the decorator `event` and provide the constant rate :math:`α` as an argument:
 
 .. literalinclude:: ../examples/birth_death.py
 	:start-after: example-st\u0061rt
@@ -64,7 +64,7 @@ Taken together, our script looks like this:
 
 if __name__ == "__main__":
 	# example-start
-	from oogillespie import Gillespie
+	from oogillespie import Gillespie, event
 	
 	α = 0.1
 	ω = 0.001
@@ -73,14 +73,14 @@ if __name__ == "__main__":
 		def initialise(self,N=0):
 			self.N = N
 		
-		@Gillespie.event(α)
+		@event(α)
 		def birth(self):
 			self.N += 1
 		
 		def death_prob(self):
 			return ω*self.N
 		
-		@Gillespie.event(death_prob)
+		@event(death_prob)
 		def death(self):
 			self.N -= 1
 		

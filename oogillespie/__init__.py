@@ -1,4 +1,4 @@
-from ._oogillespie import Gillespie, GillespieUsageError
+from ._oogillespie import Gillespie, GillespieUsageError, event
 
 try:
 	from .version import version as __version__

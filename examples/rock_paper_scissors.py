@@ -59,7 +59,7 @@ Altogether our code would look like this:
 
 if __name__ == "__main__":
 	# example-start
-	from oogillespie import Gillespie
+	from oogillespie import Gillespie, event
 	import numpy
 	
 	α = numpy.array([ 0.2, 0.01, 0.01 ])
@@ -77,14 +77,14 @@ if __name__ == "__main__":
 		def state(self):
 			return self.time,self.N
 		
-		@Gillespie.event(α)
+		@event(α)
 		def birth(self,i):
 			self.N[i] += 1
 		
 		def transform_rate(self):
 			return self.N*A*self.N[:,None]
 		
-		@Gillespie.event(transform_rate)
+		@event(transform_rate)
 		def transform(self,i,j):
 			self.N[i] -= 1
 			self.N[j] += 1

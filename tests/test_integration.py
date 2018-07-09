@@ -1,4 +1,4 @@
-from oogillespie import Gillespie
+from oogillespie import Gillespie, event
 from math import sqrt
 from pytest import approx, fixture, mark
 from numpy import diag
@@ -20,41 +20,41 @@ class ProcessBase(Gillespie):
 		return self.N
 
 class SimpleProcess(ProcessBase):
-	@Gillespie.event(rates[0])
+	@event(rates[0])
 	def increase_N0(self):
 		self.N[0] += 1
 	
 	def N1_rate(self):
 		return rates[1]
 	
-	@Gillespie.event(N1_rate)
+	@event(N1_rate)
 	def increase_N1(self):
 		self.N[1] += 1
 	
-	@Gillespie.event(rates[2])
+	@event(rates[2])
 	def increase_N2(self):
 		self.N[2] += 1
 	
-	@Gillespie.event(0)
+	@event(0)
 	def impossible_event(self):
 		raise AssertionError("This event should never happen")
 
 class MultiEventProcess(ProcessBase):
-	@Gillespie.event(rates)
+	@event(rates)
 	def increase(self,i):
 		self.N[i] += 1
 
 class TwoMultiEventProcess(ProcessBase):
-	@Gillespie.event(rates[:2])
+	@event(rates[:2])
 	def increase_01(self,i):
 		self.N[i] += 1
 	
-	@Gillespie.event(rates[2:])
+	@event(rates[2:])
 	def increase_2(self,i):
 		self.N[i+2] += 1
 
 class MultiEventProcess2D(ProcessBase):
-	@Gillespie.event(diag(rates))
+	@event(diag(rates))
 	def increase(self,i,j):
 		assert i==j
 		self.N[i] += 1
@@ -63,7 +63,7 @@ class VariableRateMultiEventProcess(ProcessBase):
 	def increase_rate(self):
 		return rates
 	
-	@Gillespie.event(increase_rate)
+	@event(increase_rate)
 	def increase(self,i):
 		self.N[i] += 1
 
@@ -71,7 +71,7 @@ class VariableRateMultiEventProcess2D(ProcessBase):
 	def increase_rate(self):
 		return diag(rates)
 	
-	@Gillespie.event(increase_rate)
+	@event(increase_rate)
 	def increase(self,i,j):
 		assert i==j
 		self.N[i] += 1
