@@ -120,7 +120,7 @@ class Gillespie(object):
 		
 		* The event has one argument other than `self`. The decorator is a sequence of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the sequence is passed as an argument to the event method.
 
-		* A generalisation of the above: The event has k arguments other than `self`. The decorator has a nested sequence of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method.
+		* A generalisation of the above: The event has k arguments other than `self`. The decorator has a nested sequence of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method. All sequences on the same level must have the same length.
 		
 		* The decorator is used without an argument. In this case the method obtains a member `rate`, which is in turn a decorator that must be used to mark the function that returns the rate(s) of that event in whatever of the formats given above (numbers, sequence of number, nested sequence of numbers, …) corresponds to the number of arguments of the method.
 		"""
