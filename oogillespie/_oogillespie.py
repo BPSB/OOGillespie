@@ -142,7 +142,11 @@ class Gillespie(object):
 		total_rate = cum_rates[-1]
 		dt = self._R.expovariate(total_rate)
 		
-		if self.time+dt>self.max_t or self.steps>=self.max_steps:
+		if self.time+dt>self.max_t:
+			self.time = self.max_t
+			raise StopIteration
+		
+		if self.steps>=self.max_steps:
 			raise StopIteration
 		
 		self.steps += 1

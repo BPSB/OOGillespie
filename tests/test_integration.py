@@ -100,8 +100,7 @@ class TestIntegration(object):
 			assert number == binomial_approx(process.steps,rates[i]/sum(rates))
 	
 	def test_time(self,process):
-		assert process.time < max_time
-		assert process.time > max_time - 10/sum(rates)
+		assert process.time == max_time
 	
 	def test_seeds(self,Process):
 		seed = 42
