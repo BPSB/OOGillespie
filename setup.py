@@ -3,17 +3,13 @@
 from setuptools import setup
 from io import open
 
-requirements = [
-		'numpy'
-	]
-
 setup(
 		name = 'oogillespie',
 		description = 'Gillespie algorithm.',
 		long_description = open('README.rst', encoding='utf8').read(),
 		python_requires=">=3.3",
 		packages = ['oogillespie'],
-		install_requires = requirements,
+		install_requires = ['numpy'],
 		setup_requires = ['setuptools_scm','pytest-runner'],
 		tests_require = ['pytest'],
 		use_scm_version = {'write_to': 'oogillespie/version.py'},
