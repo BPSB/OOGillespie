@@ -33,7 +33,7 @@ Next we implement the birth event. For this, we need a method that is called upo
 	:dedent: 1
 	:lines: 10-12
 
-Now, we implement the death event. The main difference to birth events is that the rate is not constant. Therefore we first define a method `death_prob` which calculates the rate of the event. We then pass this method as an argument to the `Event` decorator.
+Now, we implement the death event. The main difference to birth events is that the rate is not constant. Therefore we first define a method `death_rate` which calculates the rate of the event. We then pass this method as an argument to the `Event` decorator.
 
 .. literalinclude:: ../examples/birth_death.py
 	:start-after: example-st\u0061rt
@@ -77,10 +77,10 @@ if __name__ == "__main__":
 		def birth(self):
 			self.N += 1
 		
-		def death_prob(self):
+		def death_rate(self):
 			return ω*self.N
 		
-		@Event(death_prob)
+		@Event(death_rate)
 		def death(self):
 			self.N -= 1
 		
