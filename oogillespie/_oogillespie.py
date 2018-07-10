@@ -86,7 +86,7 @@ class Gillespie(object):
 	max_steps = 1000
 	max_t = ∞
 		The maximum number of steps or time, respectively.
-		If either of the two is exceeded, the simulation is aborted.
+		Before either of the two is exceeded (or all event rates become zero), the simulation is aborted.
 	
 	seed = None
 		Seed for random number generation.
