@@ -8,7 +8,7 @@ autodoc_mock_imports = ['numpy']
 sys.path.insert(0,os.path.abspath("../examples"))
 sys.path.insert(0,os.path.abspath("../oogillespie"))
 
-needs_sphinx = '1.3' #TODO update
+needs_sphinx = '1.6'
 
 extensions = [
     'sphinx.ext.autodoc',
