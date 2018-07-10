@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from warnings import warn
 from inspect import signature
 from itertools import product
 from functools import partial
@@ -142,7 +143,11 @@ class Gillespie(object):
 	def __next__(self):
 		cum_rates = self._get_cum_rates()
 		total_rate = cum_rates[-1]
-		dt = self._R.expovariate(total_rate)
+		try:
+			dt = self._R.expovariate(total_rate)
+		except ZeroDivisionError:
+			warn("Stopping because all events have zero rate.")
+			raise StopIteration
 		
 		if self.time+dt>self.max_t:
 			self.time = self.max_t
