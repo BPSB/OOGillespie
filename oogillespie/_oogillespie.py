@@ -146,14 +146,13 @@ class Gillespie(object):
 		try:
 			dt = self._R.expovariate(total_rate)
 		except ZeroDivisionError:
-			warn("Stopping because all events have zero rate.")
-			raise StopIteration
+			dt = np.inf
 		
-		if self.time+dt>self.max_t:
+		if self.time+dt > self.max_t:
 			self.time = self.max_t
 			raise StopIteration
 		
-		if self.steps>=self.max_steps:
+		if self.steps >= self.max_steps:
 			raise StopIteration
 		
 		self.steps += 1
