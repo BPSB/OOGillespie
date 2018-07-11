@@ -51,7 +51,7 @@ class Event(object):
 		else:
 			return self._rates
 	
-	def get_rates(self):
+	def get_flattened_rates(self):
 		return self.rates[self._transposed_par_combos]
 	
 	def set_parent(self,parent):
@@ -113,7 +113,7 @@ class Gillespie(object):
 		for member in self._members(Event):
 			member.set_parent(self)
 			self._actions.extend(member.actions())
-			self._rate_getters.append(member.get_rates)
+			self._rate_getters.append(member.get_flattened_rates)
 		
 		if not self._actions:
 			raise GillespieUsageError("No event defined. You need to mark at least one method as an event by using the Event decorator.")
