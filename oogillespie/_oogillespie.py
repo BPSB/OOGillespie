@@ -80,25 +80,25 @@ class Gillespie(object):
 	
 	Parameters
 	----------
-	time = 0
+	time
 		The starting time.
 	
-	max_steps = 1000
-	max_t = ∞
+	max_steps
+	max_t
 		The maximum number of steps or time, respectively.
 		Before either of the two is exceeded (or all event rates become zero), the simulation is aborted.
 	
-	seed = None
+	seed
 		Seed for random number generation.
 		If `None`, system time or similar is used (like random.seed).
 	"""
 	
-	def __init__(self,**kwargs):
-		self.time = kwargs.pop("time",0)
+	def __init__(self,max_steps=1000,max_t=np.inf,time=0,seed=None,**kwargs):
+		self.time = time
+		self.max_steps = max_steps
+		self.max_t = max_t
+		self._R = random.Random(seed)
 		self.steps = 0
-		self.max_steps = kwargs.pop("max_steps",1000)
-		self.max_t = kwargs.pop("max_t",np.inf)
-		self._R = random.Random(kwargs.pop("seed",None))
 		
 		self.initialise(**kwargs)
 		self._get_events()
