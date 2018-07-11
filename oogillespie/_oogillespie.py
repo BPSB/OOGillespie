@@ -11,15 +11,15 @@ class GillespieUsageError(SyntaxError):
 class Event(object):
 	"""
 	Decorator that marks a method as an event.
-
+	
 	There are several valid use cases of the argument `rates` of the decorator and the number of arguments of the decorated method:
-
+	
 	* The event method has no arguments other than `self`, and `rates` is a non-negative number specifying the rate of the event.
-
+	
 	* The event has one argument other than `self`, and `rates` is a sequence of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the sequence is passed as an argument to the event method.
-
+	
 	* A generalisation of the above: The event has k arguments other than `self`, and `rates` is a nested sequence of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method. All sequences on the same level must have the same length.
-
+	
 	* `rates` is a method returning a number or (nested) sequence of numbers as above. Note that the method must be defined before the event method.
 	"""
 	
