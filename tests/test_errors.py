@@ -62,7 +62,7 @@ def test_too_many_args():
 	assert "does not match" in exc.value.args[0]
 
 def test_negative_rate():
-	with raises(GillespieUsageError) as exc:
+	with raises(ValueError) as exc:
 		class ProcessWithNegativeEventRate(ProcessWithoutEvent):
 			@Event([0,2,-1])
 			def do_nothing(self,i): pass
