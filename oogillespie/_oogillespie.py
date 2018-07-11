@@ -24,8 +24,8 @@ class Event(object):
 	"""
 	
 	def __init__(self,rates):
-		self._variable = callable(rates)
-		if self._variable:
+		self._is_variable = callable(rates)
+		if self._is_variable:
 			self._rate_function = rates
 			# Retaining name for error message, if called without an argument:
 			self.__name__ = rates.__name__
@@ -46,7 +46,7 @@ class Event(object):
 	
 	@property
 	def rates(self):
-		if self._variable:
+		if self._is_variable:
 			return np.asarray(self._rate_function(self._parent))
 		else:
 			return self._rates
