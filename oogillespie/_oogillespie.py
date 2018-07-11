@@ -75,9 +75,6 @@ class Gillespie(object):
 	"""
 	This class only works if inherited from and if the methods `initialise` and `state` are replaced. Also, at least one method has to be marked as an event with the respective decorator.
 	
-	The constructor takes the following arguments.
-	All further arguments are forwarded to `initialise`.
-	
 	Parameters
 	----------
 	time
@@ -91,6 +88,9 @@ class Gillespie(object):
 	seed
 		Seed for random number generation.
 		If `None`, system time or similar is used (like random.seed).
+	
+	kwargs
+		Keyword arguments to be forwarded to `initialise`.
 	"""
 	
 	def __init__(self,max_steps=1000,max_t=np.inf,time=0,seed=None,**kwargs):
