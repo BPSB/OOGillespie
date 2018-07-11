@@ -41,7 +41,7 @@ class Event(object):
 		return self
 	
 	@property
-	def _called(self):
+	def _was_called(self):
 		return hasattr(self,"_action")
 	
 	@property
@@ -57,7 +57,7 @@ class Event(object):
 	def set_parent(self,parent):
 		self._parent = parent
 		
-		if not self._called:
+		if not self._was_called:
 			raise GillespieUsageError(f"Decorator for event {self.__name__} has no rate argument.")
 		
 		shape = self.rates.shape
