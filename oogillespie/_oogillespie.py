@@ -3,7 +3,7 @@ import random
 from warnings import warn
 from inspect import signature
 from itertools import product
-from functools import partial
+from functools import partial, update_wrapper
 
 class GillespieUsageError(SyntaxError):
 	pass
@@ -36,7 +36,7 @@ class Event(object):
 	
 	def __call__(self,function):
 		self._action = function
-		self.__name__ = function.__name__
+		update_wrapper(self,function)
 		self.dim = len(signature(self._action).parameters)-1
 		return self
 	
