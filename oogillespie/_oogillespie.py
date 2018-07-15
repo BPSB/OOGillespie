@@ -110,10 +110,10 @@ class Gillespie(object):
 		self._actions = []
 		self._rate_getters = []
 		
-		for member in self._members(Event):
-			member.set_parent(self)
-			self._actions.extend(member.actions())
-			self._rate_getters.append(member.get_flattened_rates)
+		for event in self._members(Event):
+			event.set_parent(self)
+			self._actions.extend(event.actions())
+			self._rate_getters.append(event.get_flattened_rates)
 		
 		if not self._actions:
 			raise GillespieUsageError("No event defined. You need to mark at least one method as an event by using the Event decorator.")
