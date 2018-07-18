@@ -138,7 +138,7 @@ class Gillespie(object):
 			self._rates[i:j] = rates
 			i = j
 		
-		return np.cumsum(self._rates)
+		return self._rates.cumsum()
 	
 	def __next__(self):
 		cum_rates = self._get_cum_rates()
