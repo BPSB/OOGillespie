@@ -14,7 +14,6 @@ setup(
 		tests_require = ['pytest'],
 		use_scm_version = {'write_to': 'oogillespie/version.py'},
 		classifiers = [
-				'Development Status :: Alpha',
 				'License :: OSI Approved :: BSD License',
 				'Operating System :: POSIX',
 				'Operating System :: MacOS :: MacOS X',
