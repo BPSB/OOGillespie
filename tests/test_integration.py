@@ -4,9 +4,15 @@ from pytest import approx, fixture, mark
 from numpy import diag
 
 def binomial_approx(n,p):
+	"""
+	Returns an approx object for the binomial distribution with n samples and probability p. Compare a number with this object to see whether its compatible with this distribution.
+	"""
 	return approx(n*p,abs=3*sqrt(n*p*(1-p)))
 
 def poisson_approx(t,λ):
+	"""
+	Returns an approx object for the Poisson distribution with a total time t and rate λ. Compare a number with this object to see whether its compatible with this distribution.
+	"""
 	return approx(t*λ,3*sqrt(λ))
 
 rates = (1,2,3,0,0)
