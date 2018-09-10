@@ -7,7 +7,7 @@ setup(
 		name = 'oogillespie',
 		description = 'Gillespie algorithm.',
 		long_description = open('README.rst', encoding='utf8').read(),
-		python_requires=">=3.3",
+		python_requires=">=3.6",
 		packages = ['oogillespie'],
 		install_requires = ['numpy'],
 		setup_requires = ['setuptools_scm','pytest-runner'],
