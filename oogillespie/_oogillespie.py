@@ -20,7 +20,9 @@ class Event(object):
 	
 	* A generalisation of the above: The event has k arguments other than `self`, and `rates` is a nested sequence of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method. All sequences on the same level must have the same length.
 	
-	* `rates` is a method returning a number or (nested) sequence of numbers as above. Note that the method must be defined before the event method.
+	* `rates` is a method returning a number or (nested) sequence of numbers as above.
+	
+	In any case the number, sequence, or method providing the rates must be defined before the event method.
 	"""
 	
 	def __init__(self,rates):
