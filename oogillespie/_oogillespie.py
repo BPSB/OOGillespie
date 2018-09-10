@@ -37,6 +37,7 @@ class Event(object):
 				raise ValueError("Rates must be non-negative.")
 	
 	def __call__(self,function):
+		# The decorated function is passed through this and replaced by its output.
 		self._action = function
 		update_wrapper(self,function)
 		self.dim = len(signature(self._action).parameters)-1
@@ -57,6 +58,9 @@ class Event(object):
 		return self.rates[self._transposed_par_combos]
 	
 	def set_parent(self,parent):
+		"""
+		Sets the instance of the class on which the event is to be executed. Without this, the event is useless.
+		"""
 		self._parent = parent
 		
 		if not self._was_called:
