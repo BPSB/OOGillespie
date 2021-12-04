@@ -83,7 +83,9 @@ class Event(object):
 
 class Gillespie(ABC):
 	"""
-	This class only works if inherited from and if the methods `initialise` and `state` are replaced. Also, at least one method has to be marked as an event with the respective decorator.
+	Base class for Gillespie models. This class only works if inherited from and if the methods `initialise` and `state` are replaced. Also, at least one method has to be marked as an event with the respective decorator.
+	
+	When an instance of the class is iterated over, the actual simulation is performed and the iterator returns pairs of times and states after each step.
 	
 	Parameters
 	----------
