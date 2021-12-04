@@ -24,7 +24,7 @@ We start with importing the Gillespie class as well as setting the control param
 	:lines: 1-10
 
 We then continue with defining the class for our process.
-Nothing new happens in the `initialise` and `state` functions, except that `N` is an array – and we return a copy of it to avoid changes to the internal state carrying over:
+Nothing new happens in the `initialise` and `state` functions, except that `N` is an array:
 
 .. literalinclude:: ../examples/rock_paper_scissors.py
 	:start-after: example-st\u0061rt
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 			self.N = numpy.asarray(N or [0,0,0])
 		
 		def state(self):
-			return self.time,self.N.copy()
+			return self.time,self.N
 		
 		@Event(α)
 		def birth(self,i):
