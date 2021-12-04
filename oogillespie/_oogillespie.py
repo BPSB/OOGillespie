@@ -40,6 +40,7 @@ class Event(object):
 	def __call__(self,function):
 		# The decorated function is passed through this and replaced by its output.
 		self._action = function
+		# Retain function’s metadata:
 		update_wrapper(self,function)
 		self.dim = len(signature(self._action).parameters)-1
 		return self
@@ -60,7 +61,7 @@ class Event(object):
 	
 	def set_parent(self,parent):
 		"""
-		Sets the instance of the class on which the event is to be executed. Without this, the event is useless.
+		Sets the instance of the class (usually a subclass of Gillespie) on which the event is to be executed. Without this, the event is useless.
 		"""
 		self._parent = parent
 		
