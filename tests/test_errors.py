@@ -5,9 +5,9 @@ class ProcessWithoutInitialise(Gillespie):
 	pass
 
 def test_no_initialise():
-	with raises(GillespieUsageError) as exc:
+	with raises(TypeError) as exc:
 		ProcessWithoutInitialise()
-	assert "must overwrite" in exc.value.args[0]
+	assert "Can't instantiate abstract class" in exc.value.args[0]
 
 class ProcessWithoutState(Gillespie):
 	def initialise(self): pass
@@ -16,13 +16,14 @@ class ProcessWithoutState(Gillespie):
 	def do_nothing(self): pass
 
 def test_no_state():
-	with raises(GillespieUsageError) as exc:
+	with raises(TypeError) as exc:
 		for state in ProcessWithoutState():
 			pass
-	assert "must overwrite" in exc.value.args[0]
+	assert "Can't instantiate abstract class" in exc.value.args[0]
 
 class ProcessWithoutRate(Gillespie):
 	def initialise(self): pass
+	def state(self): pass
 	
 	@Event
 	def do_nothing(self): pass

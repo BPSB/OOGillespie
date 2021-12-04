@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import numpy as np
 import random
 from warnings import warn
@@ -77,7 +78,7 @@ class Event(object):
 		for combo in self._par_combos:
 			yield partial(self._action,self._parent,*combo)
 
-class Gillespie(object):
+class Gillespie(ABC):
 	"""
 	This class only works if inherited from and if the methods `initialise` and `state` are replaced. Also, at least one method has to be marked as an event with the respective decorator.
 	
@@ -170,15 +171,17 @@ class Gillespie(object):
 	def __iter__(self):
 		return self
 	
+	@abstractmethod
 	def initialise(self):
 		"""
 		You must overwrite this method. It is called when initialising the integrator. Use it to set internal parameters to initial values. It gets passed surplus arguments from the constructor.
 		"""
-		raise GillespieUsageError("You must overwrite the initiate method when inheriting from Gillespie")
+		pass
 	
+	@abstractmethod
 	def state(self):
 		"""
 		You must overwrite this method. It is called to determine the return value when iterating/simulating. Use it to return whatever properties you are interested in.
 		"""
-		raise GillespieUsageError("You must overwrite the state method when inheriting from Gillespie")
+		pass
 
