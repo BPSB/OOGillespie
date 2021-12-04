@@ -30,7 +30,7 @@ class Event(object):
 		self._is_variable = callable(rates)
 		if self._is_variable:
 			self._rate_function = rates
-			# Retaining name for error message, if called without an argument:
+			# Retaining name for error message of _assert_decorator_argument:
 			self.__name__ = rates.__name__
 		else:
 			self._rates = np.asarray(rates)
@@ -45,9 +45,10 @@ class Event(object):
 		self.dim = len(signature(self._action).parameters)-1
 		return self
 	
-	@property
-	def _was_called(self):
-		return hasattr(self,"_action")
+	def _assert_decorator_argument(self):
+		# If the decorator has an argument, it was called (self.__call__) and thus it must have the attribute _action_:
+		if not hasattr(self,"_action"):
+			raise GillespieUsageError(f"Decorator for event {self.__name__} has no rate argument.")
 	
 	@property
 	def rates(self):
@@ -64,9 +65,7 @@ class Event(object):
 		Sets the instance of the class (usually a subclass of Gillespie) on which the event is to be executed. Without this, the event is useless.
 		"""
 		self._parent = parent
-		
-		if not self._was_called:
-			raise GillespieUsageError(f"Decorator for event {self.__name__} has no rate argument.")
+		self._assert_decorator_argument()
 		
 		shape = self.rates.shape
 		if self.dim != len(shape):
