@@ -75,6 +75,9 @@ class Event(object):
 		self._transposed_par_combos = tuple(map(np.array,zip(*self._par_combos)))
 	
 	def actions(self):
+		"""
+		Yields zero-argument functions (actions) for each variant of the event.
+		"""
 		for combo in self._par_combos:
 			yield partial(self._action,self._parent,*combo)
 
