@@ -107,16 +107,16 @@ class Gillespie(ABC):
 		self.time = time
 		self.max_steps = max_steps
 		self.max_t = max_t
-		self._R = random.Random(seed)
+		self._RNG = random.Random(seed)
 		self.steps = 0
 		
 		self.initialise(**kwargs)
-		self._get_events()
+		self._register_events()
 		self._n = len(self._actions)
 		# dummy array for efficiency:
 		self._rates = np.empty(self._n)
 	
-	def _get_events(self):
+	def _register_events(self):
 		self._actions = []
 		self._rate_getters = []
 		
@@ -151,10 +151,11 @@ class Gillespie(ABC):
 		return self._rates.cumsum()
 	
 	def __next__(self):
+		# Perform one step of the Gillespie algorithm
 		cum_rates = self._get_cum_rates()
 		total_rate = cum_rates[-1]
 		try:
-			dt = self._R.expovariate(total_rate)
+			dt = self._RNG.expovariate(total_rate)
 		except ZeroDivisionError:
 			dt = np.inf
 		
@@ -168,7 +169,7 @@ class Gillespie(ABC):
 		self.steps += 1
 		self.time += dt
 		
-		self._R.choices(self._actions,cum_weights=cum_rates)[0]()
+		self._RNG.choices(self._actions,cum_weights=cum_rates)[0]()
 		return self.state()
 	
 	def __iter__(self):
