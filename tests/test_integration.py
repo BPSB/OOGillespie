@@ -99,11 +99,11 @@ class TestIntegration(object):
 		return proc
 	
 	def test_step_number(self,process):
-		assert sum(process.state()) == process.steps == poisson_approx(max_time,sum(rates))
+		assert sum(process.state()) == process.steps_taken == poisson_approx(max_time,sum(rates))
 	
 	def test_rates(self,process):
 		for i,number in enumerate(process.state()):
-			assert number == binomial_approx(process.steps,rates[i]/sum(rates))
+			assert number == binomial_approx(process.steps_taken,rates[i]/sum(rates))
 	
 	def test_time(self,process):
 		assert process.time == max_time
