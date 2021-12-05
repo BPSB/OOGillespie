@@ -20,14 +20,14 @@ class Event(object):
 	
 	* A generalisation of the above: The event has k arguments other than `self`, and `rates` is a nested sequence of non-negative numbers as an argument, with k levels of nesting. All sequences on the same level must have the same length. For example, for k=2, `rates` is a matrix. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method.
 	
-	* `rates` is a method returning a number or (nested) sequence of numbers as above.
+	* `rates` is a method returning a number or (nested) sequence of numbers as above. This method must take `self` and only `self` as an argument.
 	
 	In any case the number, sequence, or method providing the rates must be defined before the event method.
 	"""
 	
 	def __init__(self,rates):
-		self._is_variable = callable(rates)
-		if self._is_variable:
+		self._has_variable_rates = callable(rates)
+		if self._has_variable_rates:
 			self._rate_function = rates
 			# Retaining name for error message of _assert_decorator_argument:
 			self.__name__ = rates.__name__
@@ -37,7 +37,7 @@ class Event(object):
 				raise ValueError("Rates must be non-negative.")
 	
 	def __call__(self,function):
-		# The decorated function is passed through this and replaced by its output.
+		# The decorated function is passed through this and replaced by its output, i.e., this instance of Event.
 		self._action = function
 		# Retain function’s metadata:
 		update_wrapper(self,function)
@@ -45,13 +45,13 @@ class Event(object):
 		return self
 	
 	def _assert_decorator_argument(self):
-		# If the decorator has an argument, it was called (self.__call__) and thus it must have the attribute _action_:
+		# If the decorator has an argument, it was called (self.__call__) and thus it must have the attribute _action:
 		if not hasattr(self,"_action"):
 			raise GillespieUsageError(f"Decorator for event {self.__name__} has no rate argument.")
 	
 	@property
 	def rates(self):
-		if self._is_variable:
+		if self._has_variable_rates:
 			return np.asarray(self._rate_function(self._parent))
 		else:
 			return self._rates
@@ -61,7 +61,7 @@ class Event(object):
 	
 	def set_parent(self,parent):
 		"""
-		Sets the instance of the class (usually a subclass of Gillespie) on which the event is to be executed. Without this, the event is useless.
+		Sets the instance of the class (usually a subclass of Gillespie) on which the event is to be executed. Without this, the event is useless. Gillespie calls this when registering Events.
 		"""
 		self._parent = parent
 		self._assert_decorator_argument()
@@ -70,6 +70,7 @@ class Event(object):
 		if self.dim != len(shape):
 			raise GillespieUsageError(f"Length of rate does not match number of arguments of event {self.__name__}.")
 		
+		# flattened iterables of argument combinations for uniquely mapping actions and rates in 1D.
 		self._par_combos = list(product(*map(range,shape)))
 		self._transposed_par_combos = tuple(map(np.array,zip(*self._par_combos)))
 	
@@ -109,12 +110,12 @@ class Gillespie(ABC):
 		self.max_steps = max_steps
 		self.max_t = max_t
 		self._RNG = random.Random(seed)
-		self.steps = 0
+		self.steps_taken = 0
 		
 		self.initialise(**kwargs)
 		self._register_events()
 		self._n = len(self._actions)
-		# dummy array for efficiency:
+		# dummy array for efficiency of _get_cum_rates:
 		self._rates = np.empty(self._n)
 	
 	def _register_events(self):
@@ -164,10 +165,10 @@ class Gillespie(ABC):
 			self.time = self.max_t
 			raise StopIteration
 		
-		if self.steps >= self.max_steps:
+		if self.steps_taken >= self.max_steps:
 			raise StopIteration
 		
-		self.steps += 1
+		self.steps_taken += 1
 		self.time += dt
 		
 		self._RNG.choices(self._actions,cum_weights=cum_rates)[0]()
