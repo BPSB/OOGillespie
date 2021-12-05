@@ -18,7 +18,7 @@ class Event(object):
 	
 	* The event has one argument other than `self`, and `rates` is a sequence of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the sequence is passed as an argument to the event method.
 	
-	* A generalisation of the above: The event has k arguments other than `self`, and `rates` is a nested sequence of non-negative numbers as an argument, with k levels of nesting. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method. All sequences on the same level must have the same length.
+	* A generalisation of the above: The event has k arguments other than `self`, and `rates` is a nested sequence of non-negative numbers as an argument, with k levels of nesting. All sequences on the same level must have the same length. For example, for k=2, `rates` is a matrix. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method.
 	
 	* `rates` is a method returning a number or (nested) sequence of numbers as above.
 	
@@ -84,7 +84,7 @@ class Gillespie(ABC):
 	"""
 	Base class for Gillespie models. This class only works if inherited from and if the methods `initialise` and `state` are replaced. Also, at least one method has to be marked as an event with the respective decorator.
 	
-	When an instance of the class is iterated over, the actual simulation is performed and the iterator returns pairs of times and states after each step.
+	When an instance of the class is iterated over, the actual simulation is performed and the iterator returns the output of `state` after each step.
 	
 	Parameters
 	----------
@@ -98,7 +98,7 @@ class Gillespie(ABC):
 	
 	seed
 		Seed for random number generation.
-		If `None`, system time or similar is used (like random.seed).
+		If `None`, system time or similar is used (like `random.seed`).
 	
 	kwargs
 		Keyword arguments to be forwarded to `initialise`.
