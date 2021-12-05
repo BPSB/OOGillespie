@@ -134,13 +134,9 @@ class Gillespie(ABC):
 		"""
 		Provides an iterator over all members of `self` that are an instance of `Class`.
 		"""
-		visited = set()
-		for cls in [self.__class__] + self.__class__.mro():
-			for name,member in cls.__dict__.items():
-				if name not in visited:
-					if isinstance(member,Class):
-						yield member
-					visited.add(name)
+		for member in map(self.__getattribute__,dir(self)):
+			if isinstance(member,Class):
+				yield member
 	
 	def _get_cum_rates(self):
 		i = 0
