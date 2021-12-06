@@ -10,7 +10,7 @@ class GillespieUsageError(SyntaxError):
 
 class Event(object):
 	"""
-	Decorator that marks a method as an event.
+	Decorator that marks a method (of a subclass of Gillespie) as an event.
 	
 	There are several valid use cases of the argument `rates` of the decorator and the number of arguments of the decorated method:
 	
@@ -18,7 +18,7 @@ class Event(object):
 	
 	* The event has one argument other than `self`, and `rates` is a sequence of non-negative numbers. In this case, the numbers specify the rates of different variants of the event. If an event happens, the location of the respective rate in the sequence is passed as an argument to the event method.
 	
-	* A generalisation of the above: The event has k arguments other than `self`, and `rates` is a nested sequence of non-negative numbers as an argument, with k levels of nesting. All sequences on the same level must have the same length. For example, for k=2, `rates` is a matrix. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method.
+	* A generalisation of the above: The event has k arguments other than `self`, and `rates` is a nested sequence of non-negative numbers as an argument, with k levels of nesting. All sequences on the same level must have the same length. For example, for k=2, `rates` is a matrix. If an event happens, the location of the respective rate in the sequence is passed as arguments to the event method.
 	
 	* `rates` is a method returning a number or (nested) sequence of numbers as above. This method must take `self` and only `self` as an argument.
 	
@@ -28,7 +28,7 @@ class Event(object):
 	def __init__(self,rates):
 		self._has_variable_rates = callable(rates)
 		if self._has_variable_rates:
-			self._rate_function = rates
+			self._rate_method = rates
 			# Retaining name for error message of _assert_decorator_argument:
 			self.__name__ = rates.__name__
 		else:
@@ -36,28 +36,25 @@ class Event(object):
 			if np.any(self._rates<0):
 				raise ValueError("Rates must be non-negative.")
 	
-	def __call__(self,function):
-		# The decorated function is passed through this and replaced by its output, i.e., this instance of Event.
-		self._action = function
-		# Retain function’s metadata:
-		update_wrapper(self,function)
-		self.dim = len(signature(self._action).parameters)-1
+	def __call__(self,method):
+		# The decorated method is passed through this and replaced by its output, i.e., this instance of Event.
+		self._method = method
+		# Retain method’s metadata:
+		update_wrapper(self,method)
+		self.k = len(signature(self._method).parameters)-1
 		return self
 	
 	def _assert_decorator_argument(self):
-		# If the decorator has an argument, it was called (self.__call__) and thus it must have the attribute _action:
-		if not hasattr(self,"_action"):
+		# If the decorator has an argument, it was called (self.__call__) and thus it must have the attribute _method:
+		if not hasattr(self,"_method"):
 			raise GillespieUsageError(f"Decorator for event {self.__name__} has no rate argument.")
 	
 	@property
 	def rates(self):
 		if self._has_variable_rates:
-			return np.asarray(self._rate_function(self._parent))
+			return np.asarray(self._rate_method(self._parent))
 		else:
 			return self._rates
-	
-	def get_flattened_rates(self):
-		return self.rates[self._transposed_par_combos]
 	
 	def set_parent(self,parent):
 		"""
@@ -67,19 +64,22 @@ class Event(object):
 		self._assert_decorator_argument()
 		
 		shape = self.rates.shape
-		if self.dim != len(shape):
+		if self.k != len(shape):
 			raise GillespieUsageError(f"Length of rate does not match number of arguments of event {self.__name__}.")
 		
 		# flattened iterables of argument combinations for uniquely mapping actions and rates in 1D.
 		self._par_combos = list(product(*map(range,shape)))
 		self._transposed_par_combos = tuple(map(np.array,zip(*self._par_combos)))
 	
+	def get_flattened_rates(self):
+		return self.rates[self._transposed_par_combos]
+	
 	def actions(self):
 		"""
 		Yields zero-argument functions (actions) for each variant of the event.
 		"""
 		for combo in self._par_combos:
-			yield partial(self._action,self._parent,*combo)
+			yield partial(self._method,self._parent,*combo)
 
 class Gillespie(ABC):
 	"""
@@ -94,12 +94,10 @@ class Gillespie(ABC):
 	
 	max_steps
 	max_t
-		The maximum number of steps or time, respectively.
-		Before either of the two is exceeded (or all event rates become zero), the simulation is aborted.
+		The maximum number of steps or time, respectively. Before either of the two is exceeded (or all event rates become zero), the simulation is aborted.
 	
 	seed
-		Seed for random number generation.
-		If `None`, system time or similar is used (like `random.seed`).
+		Seed for random number generation. If `None`, system time or similar is used (like `random.seed`).
 	
 	kwargs
 		Keyword arguments to be forwarded to `initialise`.
@@ -114,9 +112,10 @@ class Gillespie(ABC):
 		
 		self.initialise(**kwargs)
 		self._register_events()
-		self._n = len(self._actions)
-		# dummy array for efficiency of _get_cum_rates:
-		self._rates = np.empty(self._n)
+		
+		# dummy arrays for efficiency of _get_cum_rates:
+		self._rates = np.empty(len(self._actions))
+		self._cum_rates = np.empty(len(self._actions))
 	
 	def _register_events(self):
 		self._actions = []
@@ -138,20 +137,23 @@ class Gillespie(ABC):
 			if isinstance(member,Class):
 				yield member
 	
-	def _get_cum_rates(self):
+	def _compute_cum_rates(self):
+		# Initialised in constructor for efficiency:
+		# self._rates = np.empty(len(self._actions))
+		# self._cum_rates = np.empty(len(self._actions))
 		i = 0
 		for rate_getter in self._rate_getters:
-			rates = rate_getter()
-			j = i+rates.size
-			self._rates[i:j] = rates
+			new_rates = rate_getter()
+			j = i+new_rates.size
+			self._rates[i:j] = new_rates
 			i = j
 		
-		return self._rates.cumsum()
+		self._rates.cumsum(out=self._cum_rates)
 	
 	def __next__(self):
 		# Perform one step of the Gillespie algorithm
-		cum_rates = self._get_cum_rates()
-		total_rate = cum_rates[-1]
+		self._compute_cum_rates()
+		total_rate = self._cum_rates[-1]
 		try:
 			dt = self._RNG.expovariate(total_rate)
 		except ZeroDivisionError:
@@ -167,7 +169,7 @@ class Gillespie(ABC):
 		self.steps_taken += 1
 		self.time += dt
 		
-		self._RNG.choices(self._actions,cum_weights=cum_rates)[0]()
+		self._RNG.choices(self._actions,cum_weights=self._cum_rates)[0]()
 		return self.state()
 	
 	def __iter__(self):
@@ -186,4 +188,3 @@ class Gillespie(ABC):
 		You must overwrite this method. It is called to determine the return value when iterating/simulating. Use it to return whatever properties you are interested in.
 		"""
 		pass
-
