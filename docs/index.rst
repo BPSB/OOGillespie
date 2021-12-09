@@ -11,7 +11,7 @@ In contrast to other implementations it embraces object-oriented programming, wh
 
 * It is very flexible.
 
-* It is not fast.
+* It is not fast – however, your bottleneck may be elsewhere anyway, e.g. computing the rates.
 
 A Simple Example: Birth and Death
 =================================
